@@ -13,7 +13,7 @@ const ibmPlexSerif = IBM_Plex_Serif({
 
 export const metadata: Metadata = {
   title: "Andros",
-  description: "Business Exchange Platform for teh community of Andros Island",
+  description: "Business Exchange Platform for tech community of Andros Island",
   icons: {
     icon: '/icons/bonefish.svg'
   }
