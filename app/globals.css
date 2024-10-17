@@ -117,4 +117,39 @@
     @apply flex flex-col justify-between gap-8;
   }
 
+  .home-companies {
+    @apply flex flex-wrap justify-between pl-32 pr-32 pb-5 pt-5;
+  }
+
+  .company-profile-box {
+    @apply w-80 h-96 items-center gap-4 rounded-xl border border-gray-200 p-4 shadow-chart sm:gap-6 sm:p-6 mb-10;
+  }
+
+  .company-profile-box-img {
+    @apply rounded-xl w-full h-full object-cover shadow-profile;
+  }
+
+  .company-image-box {
+    @apply h-52 flex justify-center;
+  }
+
+  .company-details {
+    @apply flex flex-col justify-between p-3 h-36;
+  }
+
+  .business-name {
+    @apply text-18 lg:text-24 font-semibold text-gray-900 overflow-hidden whitespace-nowrap overflow-ellipsis; /* Apply max width */
+  }
+
+  .business-product {
+    @apply text-14 lg:text-16 font-normal text-gray-600 p-0.5;
+  }
+
+  .sold-out-class {
+    @apply text-red-700;
+  }
+
+  .available-class {
+    @apply text-green-600;
+  }
 }

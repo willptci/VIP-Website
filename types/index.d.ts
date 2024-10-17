@@ -5,6 +5,14 @@ declare type SearchParamProps = {
   searchParams: { [key: string]: string | string[] | undefined };
 };
 
+declare interface CompanyProfileBoxProps {
+  category: string;
+  businessProduct: string;
+  businessName: string;
+  available: "sold out" | "available";
+  image: string;
+}
+
 // ========================================
 
 declare type SignUpParams = {
