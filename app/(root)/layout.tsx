@@ -1,3 +1,5 @@
+import Navbar from '@/components/Navbar';
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -5,6 +7,7 @@ export default function RootLayout({
 }>) {
   return (
     <main>
+       <Navbar /> {/* Add Navbar here for a global effect */}
         {/* SIDEBAR */}
         {children}
     </main>
