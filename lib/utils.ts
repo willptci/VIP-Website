@@ -19,3 +19,5 @@ export const authFormSchema = (type: string) => z.object({
     });
   }
 });
+
+export const parseStringify = (value: any) => JSON.parse(JSON.stringify(value));
