@@ -1,6 +1,6 @@
 /* components/Navbar.module.css */
 .navbar {
-    background-color: #4db8ff; /* Light ocean blue */
+    background-color: #2980b9; 
     padding: 1rem;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   }
@@ -19,7 +19,7 @@
   }
   
   .navLinks li a:hover {
-    color: #ffcc66; /* Sandy yellow for hover effect */
+    color: #bcf8ff;
   }
   
   .logo {
