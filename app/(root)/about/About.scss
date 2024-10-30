@@ -1,0 +1,73 @@
+.about {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px;
+    font-family: 'Arial', sans-serif;
+    color: #333;
+  }
+  
+  h1 {
+    text-align: center;
+    margin-bottom: 40px;
+    color: #2c3e50;
+    font-size: 2.5rem; /* Increased size for main title */
+  }
+  
+  section {
+    margin-bottom: 60px;
+    padding: 20px;
+    border-radius: 10px;
+    background-color: #f5f5f5;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  h2 {
+    color: #2980b9;
+    font-size: 2rem; /* Increased size for section titles */
+    margin-bottom: 5px; /* Reduced margin to bring heading closer to the paragraph */
+  }
+  
+  .content {
+    display: flex;
+    align-items: center; /* Vertically center the content */
+    justify-content: space-between; /* Space between text and image */
+  }
+  
+  .content p {
+    flex: 1;
+    line-height: 1.6;
+    margin-right: 20px; /* Space between text and image */
+    font-size: 1.1rem;
+    margin-top: 0; /* Remove any top margin to bring paragraph closer to the heading */
+  }
+  
+  .mission-image,
+  .hub-image,
+  .tourism-image {
+    width: 40%; /* Adjust width as necessary */
+    height: auto;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  }
+  
+  .call-to-action-section {
+    text-align: center;
+    background-color: #eaf2f8;
+    padding: 40px;
+    border-radius: 10px;
+  }
+  
+  .cta-button {
+    padding: 10px 20px;
+    font-size: 16px;
+    background-color: #2980b9;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  .cta-button:hover {
+    background-color: #1a5276;
+  }  
