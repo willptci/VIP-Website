@@ -1,3 +1,5 @@
+import NavBar from '@/components/NavBar';
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -5,6 +7,7 @@ export default function RootLayout({
 }>) {
   return (
     <main>
+       <NavBar />
         {/* SIDEBAR */}
         {children}
     </main>
