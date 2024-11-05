@@ -20,6 +20,11 @@ declare type SignUpParams = {
   password: string;
 };
 
+declare type SignInProps = {
+  email: string;
+  password: string;
+}
+
 declare type LoginUser = {
   email: string;
   password: string;

@@ -157,4 +157,8 @@
     @apply text-14 cursor-pointer font-medium text-bankGradient;
   }
 
+  .to-home {
+    @apply text-16 text-blue-950;
+  }
+
 }

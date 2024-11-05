@@ -11,7 +11,7 @@ export const authFormSchema = (type: string) => z.object({
   password: z.string().min(8),
   verifiedPassword: type === 'sign-in' ? z.string().optional() : z.string().min(8),
 }).superRefine(({ verifiedPassword, password }, ctx) => {
-  if (verifiedPassword !== password) {
+  if (type == 'sign-up' && verifiedPassword !== password) {
     ctx.addIssue({
       code: "custom",
       message: "The passwords did not match",
