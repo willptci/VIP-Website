@@ -34,6 +34,11 @@ declare type User = {
   $id: string;
   email: string;
   userId: string;
+  firstName?: string;
+  lastName?: string;
+  telephone?: string;
+  description?: string;
+  profileImagePath?: string;
 };
 
 declare type NewUserParams = {

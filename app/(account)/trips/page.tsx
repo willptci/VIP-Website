@@ -1,4 +1,4 @@
-import React from 'react';
+import React from 'react'
 import './Purchases.scss';
 
 const purchasesData = [
@@ -7,7 +7,7 @@ const purchasesData = [
   { id: 3, name: 'Bahamas Tour', price: 199, date: '2024-08-20', status: 'Happening soon' },
 ];
 
-const PurchasesPage: React.FC = () => {
+const Trips: React.FC = () => {
   return (
     <div className="purchases">
       <h1>Purchase History</h1>
@@ -27,4 +27,4 @@ const PurchasesPage: React.FC = () => {
   );
 };
 
-export default PurchasesPage;
+export default Trips

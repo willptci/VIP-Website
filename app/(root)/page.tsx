@@ -12,7 +12,6 @@ import bonefishing_7 from '/public/companyExamples/Andros-7.jpg';
 const Home = () => {
   return (
     <section className="home">
-      <section className="home-content">
         <div className="home-companies">
           <CompanyProfileBox
           category="Fishing"
@@ -65,7 +64,6 @@ const Home = () => {
           />
         </div>
       </section>
-    </section>
   )
 }
 
