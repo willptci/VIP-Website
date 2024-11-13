@@ -20,4 +20,14 @@ export const authFormSchema = (type: string) => z.object({
   }
 });
 
+export const businessFormSchema = () => z.object({
+  firstName: z.string().min(1, 'First name is required'),
+  lastName: z.string().min(1, 'Last name is required'),
+  preferredContact: z.string().min(1, 'Must enter email or phone number'),
+  companyName: z.string().optional(),
+  description: z.string().optional(),
+  offer: z.string().min(1, 'Please describe what you offer'),
+  charges: z.string().min(1, 'Please specify price packages'),
+});
+
 export const parseStringify = (value: any) => JSON.parse(JSON.stringify(value));

@@ -1,13 +1,12 @@
-import React from 'react'
 import ProfileNav from '@/components/ui/ProfileNav'
-import ProfileComponent from '@/components/ui/ProfileComponent'
+import ProfilePage from '@/components/ui/ProfilePage';
 
 const Profile = () => {
 
   return (
     <>
       <ProfileNav/>
-      <ProfileComponent/>
+      <ProfilePage/>
     </>
   )
 }
