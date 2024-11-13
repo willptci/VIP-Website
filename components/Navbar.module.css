@@ -36,4 +36,35 @@
     max-width: 1200px;
     margin: 0 auto;
   }
+
+  /* Dropdown Styling */
+.profileContainer {
+  position: relative;
+  display: inline-block;
+}
+
+.dropdownContent {
+  display: none;
+  position: absolute;
+  background-color: #216694;
+  box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
+  padding: 10px 0;
+  min-width: 160px;
+  z-index: 1;
+}
+
+.dropdownContent a {
+  color: black;
+  padding: 12px 16px;
+  text-decoration: none;
+  display: block;
+}
+
+.dropdownContent a:hover {
+  background-color: #ddd;
+}
+
+.profileContainer:hover .dropdownContent {
+  display: block;
+}
   
