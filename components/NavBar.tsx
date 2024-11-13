@@ -14,9 +14,14 @@ const Navbar: React.FC = () => {
         </li>
         <li>
           <Link href="/services">Ecommerce</Link>
-        </li>
-        <li>
+        </li>    
+        <li className={styles.profileContainer}>
           <Link href="/profile">Profile</Link>
+          <div className={styles.dropdownContent}>
+            <Link href="/profile">User Profile Page</Link>
+            <Link href="/purchases">Purchases</Link>
+            <Link href="/settings">Settings</Link>
+          </div>
         </li>
       </ul>
     </nav>
