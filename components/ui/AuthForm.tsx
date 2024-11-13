@@ -21,7 +21,9 @@ import CustomInput from './CustomInput';
 import { authFormSchema } from '@/lib/utils';
 import { Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { getLoggedInUser, signIn, signUp } from '@/lib/actions/user.actions';
+import { getLoggedInUser, getUserInfo, signIn, signUp, updateUserProfile } from '@/lib/actions/user.actions';
+import { Checkbox } from "@/components/ui/checkbox";
+import type { CheckedState } from "@radix-ui/react-checkbox"
 
 const AuthForm = ({ type } : { type : string}) => {
     const router = useRouter();
@@ -29,7 +31,11 @@ const AuthForm = ({ type } : { type : string}) => {
     const [user, setUser] = useState<{ email?: string } | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [authError, setAuthError] = useState<string | null>(null);
-    //const loggedInUser = await getLoggedInUser();
+    const [isChecked, setIsChecked] = useState<boolean>(false);
+
+  const handleCheckboxChange = (checked: CheckedState) => {
+    setIsChecked(checked === true); // Only set to `true` or `false`
+  };
 
     const formSchema = authFormSchema(type);
 
@@ -46,13 +52,21 @@ const AuthForm = ({ type } : { type : string}) => {
         setAuthError(null);
 
         try {
+            
           if(type === 'sign-up') {
             const newUser = await signUp(data);
             if (newUser) {
                 const loggedInUser = await getLoggedInUser();
-                setUser(loggedInUser);  // Update user state with logged-in user data
+                setUser(loggedInUser); 
+                if (isChecked) {
+                    const userInfo = await getUserInfo({ userId: loggedInUser.$id });
+                    if (userInfo) {
+                        const updatedUserProfile = await updateUserProfile(userInfo.$id, { business: true });
+                        console.log("Updated user profile to set business to true:", updatedUserProfile);
+                    }
+                }
             }
-            //setUser(newUser);
+            
           }
   
           if(type === 'sign-in') {
@@ -120,6 +134,15 @@ const AuthForm = ({ type } : { type : string}) => {
                 </div>
             ) : (
                 <>
+                <div className="flex items-center space-x-2 p-5">
+                        <Checkbox id="terms" onCheckedChange={handleCheckboxChange}/>
+                        <label
+                            htmlFor="terms"
+                            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                        >
+                            Sign up as a Business
+                        </label>
+                </div>
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
                         {/* Email Input */}

@@ -7,8 +7,7 @@ export default function RootLayout({
 }>) {
   return (
     <main>
-       <NavBar />
-        {/* SIDEBAR */}
+        <NavBar />
         {children}
     </main>
   );

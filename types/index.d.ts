@@ -15,6 +15,10 @@ declare interface CompanyProfileBoxProps {
 
 // ========================================
 
+declare interface getUserInfoProps {
+  userId: string;
+}
+
 declare type SignUpParams = {
   email: string;
   password: string;
@@ -34,6 +38,12 @@ declare type User = {
   $id: string;
   email: string;
   userId: string;
+  business?: boolean;
+  firstName?: string;
+  lastName?: string;
+  telephone?: string;
+  description?: string;
+  profileImageId?: string;
 };
 
 declare type NewUserParams = {
@@ -41,4 +51,14 @@ declare type NewUserParams = {
   email: string;
   name: string;
   password: string;
+};
+
+declare type Business = {
+  companyName?: string;
+  firstName: string;
+  lastName: string;
+  description?: string;
+  preferredContact: string;
+  charges: string;
+  offer: string;
 };
