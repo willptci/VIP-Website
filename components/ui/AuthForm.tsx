@@ -134,6 +134,7 @@ const AuthForm = ({ type } : { type : string}) => {
                 </div>
             ) : (
                 <>
+                {type === 'sign-up' && (
                 <div className="flex items-center space-x-2 p-5">
                         <Checkbox id="terms" onCheckedChange={handleCheckboxChange}/>
                         <label
@@ -143,6 +144,7 @@ const AuthForm = ({ type } : { type : string}) => {
                             Sign up as a Business
                         </label>
                 </div>
+                )}
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
                         {/* Email Input */}

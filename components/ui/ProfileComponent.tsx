@@ -20,16 +20,31 @@ const ProfileComponent = () => {
 
     useEffect(() => {
         const fetchData = async () => {
-            const loggedInUser = await getLoggedInUser();
-            const userInfo = await getUserInfo({ userId: loggedInUser.$id });
-            setUserData(userInfo);
-            setLoading(false);
-
-            if (userInfo?.profileImageId) {
-                const url = await getProfileImageUrl(userInfo.profileImageId);
-                setProfileImageUrl(url);
+            try {
+                const loggedInUser = await getLoggedInUser();
+    
+                // If there's no logged-in user, set loading to false and exit
+                if (!loggedInUser) {
+                    setUserData(null);
+                    setLoading(false);
+                    return;
+                }
+    
+                const userInfo = await getUserInfo({ userId: loggedInUser.$id });
+                setUserData(userInfo);
+    
+                if (userInfo?.profileImageId) {
+                    const url = await getProfileImageUrl(userInfo.profileImageId);
+                    setProfileImageUrl(url);
+                }
+            } catch (error) {
+                console.error("Error loading user information:", error);
+                setUserData(null);  // Ensure userData is null on error
+            } finally {
+                setLoading(false);
             }
         };
+    
         fetchData();
     }, []);
 

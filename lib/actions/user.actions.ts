@@ -9,6 +9,7 @@ const {
   APPWRITE_DATABASE_ID: DATABASE_ID,
   APPWRITE_USER_COLLECTION_ID: USER_COLLECTION_ID,
   APPWRITE_STORAGE_BUCKET_ID: STORAGE_BUCKET_ID,
+  APPWRITE_BUSINESS_COLLECTION_ID: BUSINESS_COLLECTION_ID,
 } = process.env;
 
 export const signIn = async ({ email, password }: SignInProps) => {
@@ -154,17 +155,18 @@ export const createBusiness = async (userData: Business) => {
     const { account, database } = await createAdminClient();
     
     const user = await getLoggedInUser();
-    if (!user || !user.userId) {
+    if (!user || !user.$id) {
       throw new Error('User is not logged in or userId is missing');
     }
-    const userId = user.userId;
+    //const userId = user.$id;
 
-    const newUser = await database.createDocument(
+
+    const newBusiness = await database.createDocument(
       DATABASE_ID!,
-      USER_COLLECTION_ID!,
+      BUSINESS_COLLECTION_ID!,
       ID.unique(),
       {
-        userId,
+        userId: user.$id,
         companyName,
         firstName,
         lastName,
@@ -175,7 +177,7 @@ export const createBusiness = async (userData: Business) => {
       }
     );
 
-    return JSON.stringify(newUser);
+    return JSON.stringify(newBusiness);
   } catch (error) {
     console.error('Error creating business document:', error);
     throw new Error('Failed to create business document');

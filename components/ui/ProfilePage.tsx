@@ -22,8 +22,6 @@ const ProfilePage = () => {
         fetchData();
     }, []);
 
-    if (error) return <div>{error}</div>;
-
     return (
         <div>
             {isBusiness ? <BusinessProfileComponent /> : <ProfileComponent />}

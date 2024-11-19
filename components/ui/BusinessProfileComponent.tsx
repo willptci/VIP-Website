@@ -1,12 +1,5 @@
 "use client";
 import React, { useEffect, useRef, useState } from 'react';
-import {
-    Avatar,
-    AvatarFallback,
-    AvatarImage,
-  } from "@/components/ui/avatar"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
 import { getLoggedInUser, getUserInfo, logout, updateUserProfile, uploadProfileImage } from '@/lib/actions/user.actions';
 import { Card, CardContent } from "@/components/ui/card"
 import {
