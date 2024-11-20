@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input'
 
 import { Control, FieldPath } from 'react-hook-form'
 import { z } from 'zod'
-import { authFormSchema, businessFormSchema } from '@/lib/utils'
+import { businessFormSchema } from '@/lib/utils'
 
 const formSchema = businessFormSchema();
 

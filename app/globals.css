@@ -149,12 +149,8 @@
     @apply text-14 lg:text-16 font-normal text-gray-600 p-0.5;
   }
 
-  .sold-out-class {
-    @apply text-red-700;
-  }
-
-  .available-class {
-    @apply text-green-600;
+  .business-guide {
+    @apply text-10 lg:text-12 font-normal text-gray-600 p-0.5;
   }
 
   .form-link {

@@ -8,11 +8,12 @@ interface CompanyProfileBoxProps {
     category: string;
     businessProduct: string;
     businessName: string;
-    available: string;
+    firstName: string;
+    lastName: string;
     image: string;
   }
   
-const CompanyProfileBox = ({ category, businessProduct, businessName, available, image }: CompanyProfileBoxProps) => {
+const CompanyProfileBox = ({ category, businessProduct, businessName, firstName, lastName, image }: CompanyProfileBoxProps) => {
     const [imgSrc, setImgSrc] = useState(image);
 
     const handleError = () => {
@@ -36,8 +37,8 @@ const CompanyProfileBox = ({ category, businessProduct, businessName, available,
         <h3 className="business-name">{businessName}</h3>
         <div>
           <p className="business-product">{businessProduct}</p>
-          <p className={available === "sold out" ? "sold-out-class" : "available-class"}>
-            {available}
+          <p className="business-guide">
+            With {firstName + " " + lastName}
           </p>
         </div>
       </div>
