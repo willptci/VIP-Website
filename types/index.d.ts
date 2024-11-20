@@ -44,6 +44,7 @@ declare type User = {
   telephone?: string;
   description?: string;
   profileImageId?: string;
+  businessId?: string;
 };
 
 declare type NewUserParams = {
@@ -54,6 +55,7 @@ declare type NewUserParams = {
 };
 
 declare type Business = {
+  businessId?: string;
   companyName?: string;
   firstName: string;
   lastName: string;
@@ -61,4 +63,13 @@ declare type Business = {
   preferredContact: string;
   charges: string;
   offer: string;
+  images?: string[];
 };
+
+declare interface CompanyDocument {
+  image: string;
+  $id: string;
+  companyName: string;
+  firstName: string;
+  lastName: string;
+}
