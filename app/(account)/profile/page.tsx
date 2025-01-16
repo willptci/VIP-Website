@@ -5,7 +5,6 @@ const Profile = () => {
 
   return (
     <>
-      <ProfileNav/>
       <ProfilePage/>
     </>
   )

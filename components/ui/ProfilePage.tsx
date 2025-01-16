@@ -34,10 +34,6 @@ const ProfilePage = () => {
         return <div>Loading...</div>;
     }
 
-    if (error) {
-        return <div>{error}</div>;
-    }
-
     return (
         <div>
             <h1 className="text-5xl font-bold mt-12 mb-12 ml-20">

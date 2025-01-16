@@ -1,4 +1,3 @@
-import ProfileNav from '@/components/ui/ProfileNav'
 export default function RootLayout({
     children,
   }: Readonly<{
@@ -6,7 +5,6 @@ export default function RootLayout({
   }>) {
     return (
       <main>
-          <ProfileNav/>
           {children}
       </main>
     );

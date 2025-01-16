@@ -7,34 +7,27 @@ import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { Button } from "@/components/ui/button"
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
+import { Form } from "@/components/ui/form"
 import CustomInput from './CustomInput';
 import { authFormSchema } from '@/lib/utils';
 import { Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { getLoggedInUser, getUserInfo, signIn, signUp, updateUserProfile } from '@/lib/actions/user.actions';
+import { signIn, signUp } from '@/lib/actions/user.actions';
 import { Checkbox } from "@/components/ui/checkbox";
 import type { CheckedState } from "@radix-ui/react-checkbox"
+import { useAuthStore } from "@/state/authState";
 
 const AuthForm = ({ type } : { type : string}) => {
     const router = useRouter();
-    //const [user, setUser] = useState(null)
-    const [user, setUser] = useState<{ email?: string } | null>(null);
+    const [user, setUser] = useState<{ email?: string | null } | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [authError, setAuthError] = useState<string | null>(null);
     const [isChecked, setIsChecked] = useState<boolean>(false);
+    const setRole = useAuthStore((state) => state.setRole);
+    const role = useAuthStore((state) => state.role)
 
   const handleCheckboxChange = (checked: CheckedState) => {
-    setIsChecked(checked === true); // Only set to `true` or `false`
+    setIsChecked(checked === true);
   };
 
     const formSchema = authFormSchema(type);
@@ -50,43 +43,30 @@ const AuthForm = ({ type } : { type : string}) => {
     const onSubmit = async (data: z.infer<typeof formSchema>) => {
         setIsLoading(true);
         setAuthError(null);
-
+        const { email, password } = data;
+    
         try {
-            
-          if(type === 'sign-up') {
-            const newUser = await signUp(data);
-            if (newUser) {
-                const loggedInUser = await getLoggedInUser();
-                setUser(loggedInUser); 
-                if (isChecked) {
-                    const userInfo = await getUserInfo({ userId: loggedInUser.$id });
-                    if (userInfo) {
-                        const updatedUserProfile = await updateUserProfile(userInfo.$id, { business: true });
-                        console.log("Updated user profile to set business to true:", updatedUserProfile);
-                    }
-                }
-            }
-            
-          }
-  
-          if(type === 'sign-in') {
-            const response = await signIn({
-              email: data.email,
-              password: data.password,
-            })
-  
-            if (response) {
-                router.push('/');
+          if (type === "sign-up") {
+            const newUser = await signUp({ email, password });
+            setUser({ email: newUser.email });
+            if (isChecked) {
+              setRole("business");
             } else {
-                setAuthError("Username or Password was Incorrect");
+              setRole("user");
             }
           }
-        } catch (error) {
-          console.log(error);
+    
+          if (type === "sign-in") {
+            const loggedInUser = await signIn({ email, password });
+            setUser({ email: loggedInUser.email });
+            router.push("/");
+          }
+        } catch (error: any) {
+          setAuthError(error.message || "An error occurred");
         } finally {
           setIsLoading(false);
         }
-      }
+      };
 
       return (
         <section className="auth-form">
@@ -119,14 +99,14 @@ const AuthForm = ({ type } : { type : string}) => {
             </header>
             {user ? (
                 <div className="flex flex-col gap-4">
-                    <Button type="button" disabled={isLoading} className="to-home relative" onClick={() => !isLoading && router.push('/')}>
+                    <Button type="button" disabled={isLoading} className="to-home relative" onClick={() => !isLoading && (role === "business" ? router.push('/business') : router.push('/user'))}>
                                 {isLoading ? (
                                     <>
                                         <Loader2 size={20} className="animate-spin" /> &nbsp; Loading...
                                     </>
                                 ) : (
                                     <>
-                                        <span className="text-center w-full">Local Experiences Await</span>
+                                        <span className="text-center w-full">Set up my {role === "business" ? "business" : "profile"}</span>
                                         <Image src="/icons/arrow-right.svg" width={20} height={20} alt="arrow" className="absolute right-4 top-1/2 transform -translate-y-1/2"/>
                                     </>
                                 )}

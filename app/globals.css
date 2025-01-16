@@ -161,4 +161,8 @@
     @apply text-16 text-blue-950;
   }
 
+  .nav-to-end {
+    @apply flex;
+  }
+
 }

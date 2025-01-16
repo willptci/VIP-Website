@@ -35,16 +35,15 @@ declare type LoginUser = {
 };
 
 declare type User = {
-  $id: string;
+  uid: string;
+  role: "business" | "user";
   email: string;
-  userId: string;
-  business?: boolean;
-  firstName?: string;
-  lastName?: string;
+  firstName: string;
+  lastName: string;
   telephone?: string;
   description?: string;
-  profileImageId?: string;
-  businessId?: string;
+  profilePhoto: string;
+  isVerified: boolean;
 };
 
 declare type NewUserParams = {
@@ -55,21 +54,36 @@ declare type NewUserParams = {
 };
 
 declare type Business = {
-  businessId?: string;
+  ownerId: string,
+  companyId: string,
   companyName?: string;
   firstName: string;
   lastName: string;
-  description?: string;
-  preferredContact: string;
-  charges: string;
-  offer: string;
-  images?: string[];
+  ownerDescription?: string;
+  companyDescription?: string;
+  phoneNumber: string;
+  email?: string;
+  packages?: string[];
+  reviews?: string[];
+  photos?: string[];
 };
 
-declare interface CompanyDocument {
-  image: string;
-  $id: string;
-  companyName: string;
-  firstName: string;
-  lastName: string;
+declare interface CustomizeCardProps {
+  switches: {
+    showCompanyName: boolean;
+    setShowCompanyName: React.Dispatch<React.SetStateAction<boolean>>;
+    showWhoYouAre: boolean;
+    setShowWhoYouAre: React.Dispatch<React.SetStateAction<boolean>>;
+    showPackages: boolean;
+    setShowPackages: React.Dispatch<React.SetStateAction<boolean>>;
+    showContact: boolean;
+    setShowContact: React.Dispatch<React.SetStateAction<boolean>>;
+  };
+  numberOfImages: number;
+  setNumberOfImages: React.Dispatch<React.SetStateAction<number>>;
+}
+
+interface SliderWithNumberProps {
+  value: number;
+  onValueChange: (value: number) => void;
 }

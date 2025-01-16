@@ -68,6 +68,9 @@ const config = {
           700: "#344054",
           900: "#101828",
         },
+        ring: {
+          1: "#3b82f6",
+        },
       },
       backgroundImage: {
         "bank-gradient": "linear-gradient(90deg, #0179FE 0%, #4893FF 100%)",
