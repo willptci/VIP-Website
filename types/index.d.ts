@@ -90,8 +90,9 @@ interface SliderWithNumberProps {
   onValueChange: (value: number) => void;
 }
 
-interface PackageProps {
+export interface PackageProps {
   setNewPackage: React.Dispatch<React.SetStateAction<boolean>>;
+  addPackage: (newPackage: Package) => void;
 }
 
 export interface Package {
@@ -100,4 +101,5 @@ export interface Package {
   status: boolean;
   capacity: number;
   title: string;
+  createdAt: string;
 }

@@ -101,7 +101,7 @@ export const fetchBusinessPackages = async (): Promise<Package[]> => {
         amount: packageData.amount || 0,
         status: packageData.status || false,
         capacity: packageData.capacity || 0,
-        title: packageData.package || "",
+        title: packageData.title || "",
       } as Package;
     });
 
@@ -115,9 +115,46 @@ export const fetchBusinessPackages = async (): Promise<Package[]> => {
   }
 };
 
-export const addPackageToFirestore = async (packageData: Record<string, any>) => {
+// export const addPackageToFirestore = async (packageData: Record<string, any>) => {
+//   try {
+//     // Step 1: Get the authenticated user's UID
+//     const auth = getAuth();
+//     const currentUser = auth.currentUser;
+
+//     if (!currentUser) {
+//       throw new Error("User is not authenticated. Unable to create package.");
+//     }
+
+//     const businessId = currentUser.uid; // Use UID as the business document ID
+
+//     // Step 2: Create a new package document in the `packages` collection
+//     const packageId = `${businessId}_${Date.now()}`; // Unique ID for the package
+//     const packageRef = doc(db, "packages", packageId);
+
+//     const completePackageData = {
+//       ...packageData,
+//       createdAt: new Date().toISOString(),
+//     };
+
+//     await setDoc(packageRef, completePackageData);
+//     console.log("Package document created with ID:", packageId);
+
+//     // Step 3: Add the package ID to the `packages` array in the business document
+//     const businessRef = doc(db, "businesses", businessId);
+//     await updateDoc(businessRef, {
+//       packages: arrayUnion(packageId),
+//     });
+//     console.log(`Package ID ${packageId} added to business ${businessId}`);
+
+//     return packageId; // Return the created package ID
+//   } catch (error) {
+//     console.error("Error adding package to Firestore:", error);
+//     throw error;
+//   }
+// };
+
+export const addPackageToFirestore = async (packageData: Record<string, any>): Promise<Package> => {
   try {
-    // Step 1: Get the authenticated user's UID
     const auth = getAuth();
     const currentUser = auth.currentUser;
 
@@ -125,9 +162,7 @@ export const addPackageToFirestore = async (packageData: Record<string, any>) =>
       throw new Error("User is not authenticated. Unable to create package.");
     }
 
-    const businessId = currentUser.uid; // Use UID as the business document ID
-
-    // Step 2: Create a new package document in the `packages` collection
+    const businessId = currentUser.uid;
     const packageId = `${businessId}_${Date.now()}`; // Unique ID for the package
     const packageRef = doc(db, "packages", packageId);
 
@@ -137,16 +172,20 @@ export const addPackageToFirestore = async (packageData: Record<string, any>) =>
     };
 
     await setDoc(packageRef, completePackageData);
-    console.log("Package document created with ID:", packageId);
 
-    // Step 3: Add the package ID to the `packages` array in the business document
+    // Update the business document with the new package ID
     const businessRef = doc(db, "businesses", businessId);
     await updateDoc(businessRef, {
       packages: arrayUnion(packageId),
     });
-    console.log(`Package ID ${packageId} added to business ${businessId}`);
 
-    return packageId; // Return the created package ID
+    console.log("Package document created with ID:", packageId);
+
+    // Return the full package object
+    return {
+      id: packageId,
+      ...completePackageData,
+    } as Package;
   } catch (error) {
     console.error("Error adding package to Firestore:", error);
     throw error;

@@ -33,6 +33,7 @@ export type Package = {
   status: boolean
   capacity: number
   title: string
+  createdAt: string;
 }
 
 export const columns: ColumnDef<Package>[] = [
@@ -107,7 +108,7 @@ export const columns: ColumnDef<Package>[] = [
   },
 ]
 
-export function DataTableDemo() {
+export function DataTableDemo({ packages }: { packages: Package[] }) {
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
@@ -116,28 +117,30 @@ export function DataTableDemo() {
     React.useState<VisibilityState>({})
   const [rowSelection, setRowSelection] = React.useState({})
 
-  const [data, setData] = React.useState<Package[]>([]);
-  const [loading, setLoading] = React.useState(true);
+  console.log("Rendering DataTableDemo with packages:", packages);
 
-  React.useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        const packages = await fetchBusinessPackages();
-        setData(packages);
-      } catch (error) {
-        console.error("Failed to fetch packages:", error);
-        alert("Error loading packages. Please try again.");
-      } finally {
-        setLoading(false);
-      }
-    };
+  // const [data, setData] = React.useState<Package[]>([]);
+  // const [loading, setLoading] = React.useState(true);
 
-    fetchData();
-  }, []);
+  // React.useEffect(() => {
+  //   const fetchData = async () => {
+  //     try {
+  //       setLoading(true);
+  //       const packages = await fetchBusinessPackages();
+  //       setData(packages);
+  //     } catch (error) {
+  //       console.error("Failed to fetch packages:", error);
+  //       alert("Error loading packages. Please try again.");
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
+
+  //   fetchData();
+  // }, []);
 
   const table = useReactTable({
-    data,
+    data: packages,
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -155,9 +158,9 @@ export function DataTableDemo() {
     },
   })
 
-  if (loading) {
-    return <p>Loading...</p>;
-  }
+  // if (loading) {
+  //   return <p>Loading...</p>;
+  // }
 
   return (
     <div className="w-full">

@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { fetchBusinessData, updateBusinessField } from '@/lib/actions/business.actions'
+import { fetchBusinessData, fetchBusinessPackages, updateBusinessField } from '@/lib/actions/business.actions'
 import CustomizeCard from "@/components/ui/CustomizeCard";
 import { DataTableDemo } from "@/components/ui/PackageTable";
 import { ProfileCarousel } from "@/components/ui/ProfileCarousel";
@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Plus } from "lucide-react"
 import NewPackage from "@/components/ui/new-package";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { Package } from "@/types";
 
 const businessOnboarding = () => {
   const [showCompanyName, setShowCompanyName] = useState(true);
@@ -31,6 +32,8 @@ const businessOnboarding = () => {
   const [loading, setLoading] = useState(true);
   const [authId, setAuthId] = useState<string | null>(null);
 
+  const [tableData, setTableData] = useState<Package[]>([]);
+
   useEffect(() => {
     const auth = getAuth();
 
@@ -42,6 +45,10 @@ const businessOnboarding = () => {
         try {
           const data = await fetchBusinessData(uid);
           setBusinessData(data);
+
+          //might not need
+          const packages = await fetchBusinessPackages();
+          setTableData(packages);
         } catch (error) {
           console.error("Error fetching business data:", error);
           alert("Failed to load business data.");
@@ -237,7 +244,7 @@ const businessOnboarding = () => {
           {showPackages && (
             <div>
               <div className="p-5">
-                <DataTableDemo/>
+                <DataTableDemo packages={tableData}/>
                 <Button variant="secondary" className="flex-shrink-0 mt-3" onClick={() => setNewPackage(true)}><Plus/> add package</Button>
               </div>
               {(numberOfImages > 2) && (
@@ -268,6 +275,9 @@ const businessOnboarding = () => {
           {newPackage && (
             <NewPackage
               setNewPackage={setNewPackage}
+              addPackage={(newPackage: Package) =>
+                setTableData((prev) => [...prev, newPackage])
+              }
             />
           )}
         </div>
