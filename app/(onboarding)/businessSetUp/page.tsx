@@ -1,5 +1,5 @@
 "use client"
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
@@ -16,10 +16,11 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { businessFormSchema } from '@/lib/utils';
-import { addBusinessToFirestore } from '@/lib/actions/user.actions'
+import { addBusinessToFirestore } from '@/lib/actions/business.actions';
 
 const BusinessSetUp = () => {
 
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const [createBusinessError, setCreateBusinessError] = useState<string | null>(null);
     const router = useRouter();
     
@@ -42,10 +43,11 @@ const BusinessSetUp = () => {
         console.log("Form submitted with data:", data);
         //setIsLoading(true);
         setCreateBusinessError(null);
+        setIsSubmitting(true);
         try {
             const businessData = {
-              ...data,
-              createdAt: new Date().toISOString(), // Add timestamp
+                ...data,
+                createdAt: new Date().toISOString(),
             };
         
             const docId = await addBusinessToFirestore(businessData);
@@ -55,10 +57,12 @@ const BusinessSetUp = () => {
 
             router.push("/businessCustomize");
 
-          } catch (error: any) {
+            setIsSubmitting(false);
+        } catch (error: any) {
             setCreateBusinessError(error.message || "An error occurred");
             console.error("Failed to create business:", error);
-          }
+            setIsSubmitting(false);
+        }
     };
 
   return (
@@ -194,7 +198,8 @@ const BusinessSetUp = () => {
                             )}
                         />
                     </div>
-                    <Button type="submit">Submit</Button>
+                    <Button type="submit" disabled={isSubmitting}>{isSubmitting ? "Submitting..." : "Submit"}</Button>
+                    <p className="text-red-600">{createBusinessError}</p>
                 </form>
             </Form>
         </div>

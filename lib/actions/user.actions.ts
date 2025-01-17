@@ -1,6 +1,7 @@
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { auth, firebaseConfig, db } from "@/firebase/firebaseConfig";
 import { collection, addDoc } from "firebase/firestore";
+import { getAuth } from "firebase/auth";
 
 export const signIn = async ({ email, password }: { email: string; password: string }) => {
 
@@ -42,17 +43,6 @@ export const logout = async () => {
   }
 };
 
-export const addBusinessToFirestore = async (businessData: Record<string, any>) => {
-  try {
-    const docRef = await addDoc(collection(db, "businesses"), businessData);
-    console.log("Document written with ID: ", docRef.id);
-    return docRef.id;
-  } catch (error) {
-    console.error("Error adding document: ", error);
-    throw error;
-  }
-};
-
 export const updateUserProfile = async (profileData: { displayName?: string; photoURL?: string }) => {
   const user = auth.currentUser;
 
@@ -69,6 +59,8 @@ export const updateUserProfile = async (profileData: { displayName?: string; pho
     console.warn("No user is currently logged in.");
   }
 };
+
+
 
 // export const setCustomClaims = async (uid: string, claims: { business?: boolean }) => {
 //   try {

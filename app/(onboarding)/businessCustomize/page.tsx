@@ -1,12 +1,16 @@
 "use client";
+import React, { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { fetchBusinessData, fetchBusinessPackages, updateBusinessField } from '@/lib/actions/business.actions'
 import CustomizeCard from "@/components/ui/CustomizeCard";
 import { DataTableDemo } from "@/components/ui/PackageTable";
-import React, { useState } from "react";
 import { ProfileCarousel } from "@/components/ui/ProfileCarousel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus } from "lucide-react"
 import NewPackage from "@/components/ui/new-package";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { Package } from "@/types";
 
 const businessOnboarding = () => {
   const [showCompanyName, setShowCompanyName] = useState(true);
@@ -16,23 +20,75 @@ const businessOnboarding = () => {
   const [showContact, setShowContact] = useState(true);
   const [numberOfImages, setNumberOfImages] = useState(5);
 
-  const [companyName, setCompanyName] = useState("Company Name");
-  const [isEditingCompanyName, setIsEditingCompanyName] = useState(false);
+  const router = useRouter();
+  const [businessData, setBusinessData] = useState<any>(null);
+  const [isEditing, setIsEditing] = useState({
+    companyName: false,
+    companyDescription: false,
+    ownerDescription: false,
+    phoneNumber: false,
+  });
+  const [newPackage, setNewPackage] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [authId, setAuthId] = useState<string | null>(null);
 
-  const [companyDescription, setCompanyDescription] = useState("Company Description");
-  const [isEditingCompanyDescription, setIsEditingCompanyDescription] = useState(false);
+  const [tableData, setTableData] = useState<Package[]>([]);
 
-  const [whoYouAre, setWhoYouAre] = useState("Show who you are");
-  const [isEditingWhoYouAre, setIsEditingWhoYouAre] = useState(false);
+  useEffect(() => {
+    const auth = getAuth();
 
-  const [contact, setContact] = useState("***-***-****");
-  const [isEditingContact, setIsEditingContact] = useState(false);
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        const uid = user.uid;
+        setAuthId(uid);
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
-      setIsEditingCompanyName(false);
+        try {
+          const data = await fetchBusinessData(uid);
+          setBusinessData(data);
+
+          //might not need
+          const packages = await fetchBusinessPackages();
+          setTableData(packages);
+        } catch (error) {
+          console.error("Error fetching business data:", error);
+          alert("Failed to load business data.");
+        }
+      } else {
+        alert("You must be logged in to access your business data.");
+        router.push("/login");
+      }
+
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, [router]);
+
+  const handleUpdateField = async (field: string, value: string) => {
+    try {
+      setBusinessData((prev: any) => ({
+        ...prev,
+        [field]: value,
+      }));
+
+      await updateBusinessField(field, value);
+  
+      console.log(`Field "${field}" updated successfully in Firestore.`);
+    } catch (error) {
+      console.error(`Error updating field "${field}":`, error);
+      alert("Failed to update field. Please try again.");
     }
   };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, field: string) => {
+    if (e.key === "Enter") {
+      setIsEditing((prev) => ({ ...prev, [field]: false }));
+    }
+  };
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <section className="p-10 h-full flex flex-col justify-center bg-grey-50">
@@ -44,24 +100,34 @@ const businessOnboarding = () => {
 
           {showCompanyName && (
             <div className="flex gap-5 justify-center items-center">
-              {isEditingCompanyName ? (
+              {isEditing.companyName ? (
                 <Input
                   type="text"
-                  value={companyName}
-                  onChange={(e) => setCompanyName(e.target.value)}
-                  onBlur={() => setIsEditingCompanyName(false)}
-                  onKeyDown={handleKeyDown}
+                  value={businessData.companyName}
+                  onChange={(e) => handleUpdateField("companyName", e.target.value)}
+                  onBlur={() => setIsEditing((prev) => ({ ...prev, companyName: false }))}
+                  onKeyDown={(e) => handleKeyDown(e, "companyName")}
                   className="text-36 font-bold text-black w-auto"
                   autoFocus
                 />
               ) : (
                 <h1
                   className="text-36 font-bold text-black"
-                  onClick={() => setIsEditingCompanyName(true)}
+                  onClick={() => setIsEditing((prev) => ({ ...prev, companyName: true }))}
                 >
-                  {companyName}
+                  {businessData.companyName}
                 </h1>
               )}
+            </div>
+          )}
+
+          {!showCompanyName && (
+            <div className="flex gap-5 justify-center items-center">
+              <h1
+                className="text-36 font-bold text-black"
+              >
+                {businessData.firstName + " " + businessData.lastName}
+              </h1>
             </div>
           )}
 
@@ -70,51 +136,82 @@ const businessOnboarding = () => {
               {(numberOfImages > 0) && (
                 <div className="border shadow w-[150px] h-36 rounded-xl"></div>
               )}
-              {isEditingCompanyDescription ? (
+              {isEditing.companyDescription ? (
                 <Input
                   type="text"
-                  value={companyDescription}
-                  onChange={(e) => setCompanyDescription(e.target.value)}
-                  onBlur={() => setIsEditingCompanyDescription(false)}
-                  onKeyDown={handleKeyDown}
+                  value={businessData.companyDescription}
+                  onChange={(e) => handleUpdateField("companyDescription", e.target.value)}
+                  onBlur={() => setIsEditing((prev) => ({ ...prev, companyDescription: false }))}
+                  onKeyDown={(e) => handleKeyDown(e, "companyDescription")}
                   className="text-36 font-bold text-black w-auto"
                   autoFocus
                 />
               ) : (
                 <p
                   className="p-5"
-                  onClick={() => setIsEditingCompanyDescription(true)}
+                  onClick={() => setIsEditing((prev) => ({ ...prev, companyDescription: true }))}
                 >
-                  {companyDescription}
+                  {businessData.companyDescription}
                 </p>
               )}
             </div>
           )}
 
           {showWhoYouAre && (
-            <div className="flex mt-10 justify-center items-center gap-10">
-              {isEditingWhoYouAre ? (
-                <Input
-                  type="text"
-                  value={whoYouAre}
-                  onChange={(e) => setWhoYouAre(e.target.value)}
-                  onBlur={() => setIsEditingWhoYouAre(false)}
-                  onKeyDown={handleKeyDown}
-                  className="text-36 font-bold text-black w-auto"
-                  autoFocus
-                />
+            <div>
+              {!showCompanyDescription ? (
+                <div className="flex mt-10 justify-center items-center gap-10">
+                  {(numberOfImages > 1) && (
+                    <div className="flex-col">
+                      <div className="border shadow w-[150px] h-36 rounded-xl"></div>
+                      <p className="mt-2 text-center">{businessData.firstName + " " + businessData.lastName}</p>
+                    </div>
+                  )}
+                  {isEditing.ownerDescription ? (
+                    <Input
+                      type="text"
+                      value={businessData.ownerDescription}
+                      onChange={(e) => handleUpdateField("ownerDescription", e.target.value)}
+                      onBlur={() => setIsEditing((prev) => ({ ...prev, ownerDescription: false }))}
+                      onKeyDown={(e) => handleKeyDown(e, "ownerDescription")}
+                      className="text-36 font-bold text-black w-auto"
+                      autoFocus
+                    />
+                  ) : (
+                    <p
+                      className="p-5"
+                      onClick={() => setIsEditing((prev) => ({ ...prev, ownerDescription: true }))}
+                    >
+                      {businessData.ownerDescription}
+                    </p>
+                  )}
+                </div>
               ) : (
-                <p
-                  className="p-5"
-                  onClick={() => setIsEditingWhoYouAre(true)}
-                >
-                  {whoYouAre}
-                </p>
-              )}
-              {(numberOfImages > 1) && (
-                <div className="flex-col">
-                  <div className="border shadow w-[150px] h-36 rounded-xl"></div>
-                  <p className="mt-2 text-center">Will Parrish</p>
+                <div className="flex mt-10 justify-center items-center gap-10">
+                  {isEditing.ownerDescription ? (
+                    <Input
+                      type="text"
+                      value={businessData.ownerDescription}
+                      onChange={(e) => handleUpdateField("ownerDescription", e.target.value)}
+                      onBlur={() => setIsEditing((prev) => ({ ...prev, ownerDescription: false }))}
+                      onKeyDown={(e) => handleKeyDown(e, "ownerDescription")}
+                      className="text-36 font-bold text-black w-auto"
+                      autoFocus
+                    />
+                  ) : (
+                    <p
+                      className="p-5"
+                      onClick={() => setIsEditing((prev) => ({ ...prev, ownerDescription: true }))}
+                    >
+                      {businessData.ownerDescription}
+                    </p>
+                  )}
+                  {(numberOfImages > 1) && (
+                    <div className="flex-col">
+                      <div className="border shadow w-[150px] h-36 rounded-xl"></div>
+                      <p className="mt-2 text-center">{businessData.firstName + " " + businessData.lastName}</p>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -123,22 +220,22 @@ const businessOnboarding = () => {
           {showContact && (
             <div className="flex justify-center items-center p-5 gap-5">
               <p className="header-2">Contact me at</p>
-              {isEditingContact ? (
+              {isEditing.phoneNumber ? (
                 <Input
                   type="text"
-                  value={contact}
-                  onChange={(e) => setContact(e.target.value)}
-                  onBlur={() => setIsEditingContact(false)}
-                  onKeyDown={handleKeyDown}
+                  value={businessData.phoneNumber}
+                  onChange={(e) => handleUpdateField("phoneNumber", e.target.value)}
+                  onBlur={() => setIsEditing((prev) => ({ ...prev, phoneNumber: false }))}
+                  onKeyDown={(e) => handleKeyDown(e, "phoneNumber")}
                   className="text-36 font-bold text-black w-auto"
                   autoFocus
                 />
               ) : (
                 <p
                   className="header-2"
-                  onClick={() => setIsEditingContact(true)}
+                  onClick={() => setIsEditing((prev) => ({ ...prev, phoneNumber: true }))}
                 >
-                  {contact}
+                  {businessData.phoneNumber}
                 </p>
               )}
             </div>
@@ -147,8 +244,8 @@ const businessOnboarding = () => {
           {showPackages && (
             <div>
               <div className="p-5">
-                <DataTableDemo/>
-                <Button variant="secondary" className="flex-shrink-0 mt-3"><Plus/> add package</Button>
+                <DataTableDemo packages={tableData}/>
+                <Button variant="secondary" className="flex-shrink-0 mt-3" onClick={() => setNewPackage(true)}><Plus/> add package</Button>
               </div>
               {(numberOfImages > 2) && (
                 <div className="p-5 ml-10 mr-10">
@@ -169,11 +266,20 @@ const businessOnboarding = () => {
               setShowPackages,
               showContact,
               setShowContact,
+              showCompanyDescription,
+              setShowCompanyDescription
             }}
             numberOfImages={numberOfImages}
             setNumberOfImages={setNumberOfImages}
           />
-          <NewPackage/>
+          {newPackage && (
+            <NewPackage
+              setNewPackage={setNewPackage}
+              addPackage={(newPackage: Package) =>
+                setTableData((prev) => [...prev, newPackage])
+              }
+            />
+          )}
         </div>
       </div>
     </section>

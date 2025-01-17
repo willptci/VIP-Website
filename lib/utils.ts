@@ -30,4 +30,10 @@ export const businessFormSchema = () => z.object({
   companyDescription: z.string().optional(),
 });
 
+export const packageFormSchema = () => z.object({
+  title: z.string().min(1, 'Must enter package label'),
+  capacity: z.string().min(1, 'Must enter max capacity'),
+  amount: z.string().min(1, 'Must enter price'),
+});
+
 export const parseStringify = (value: any) => JSON.parse(JSON.stringify(value));

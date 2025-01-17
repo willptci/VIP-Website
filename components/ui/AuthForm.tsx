@@ -99,7 +99,7 @@ const AuthForm = ({ type } : { type : string}) => {
             </header>
             {user ? (
                 <div className="flex flex-col gap-4">
-                    <Button type="button" disabled={isLoading} className="to-home relative" onClick={() => !isLoading && (role === "business" ? router.push('/business') : router.push('/user'))}>
+                    <Button type="button" disabled={isLoading} className="to-home relative" onClick={() => !isLoading && (role === "business" ? router.push('/businessSetUp') : router.push('/userSetUp'))}>
                                 {isLoading ? (
                                     <>
                                         <Loader2 size={20} className="animate-spin" /> &nbsp; Loading...

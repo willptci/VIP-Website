@@ -17,7 +17,6 @@ import { ArrowUpDown, ChevronDown, MoreHorizontal } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Input } from "@/components/ui/input"
 import {
   Table,
   TableBody,
@@ -26,54 +25,18 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import { fetchBusinessPackages } from "@/lib/actions/business.actions"
 
-const data: Payment[] = [
-  {
-    id: "m5gr84i9",
-    amount: 316,
-    status: "available",
-    capacity: 5,
-    package: "Bone Fishing",
-  },
-  {
-    id: "3u1reuv4",
-    amount: 242,
-    status: "available",
-    capacity: 7,
-    package: "Surfing",
-  },
-  {
-    id: "derv1ws0",
-    amount: 837,
-    status: "available",
-    capacity: 10,
-    package: "Tubing",
-  },
-  {
-    id: "5kma53ae",
-    amount: 874,
-    status: "unavailable",
-    capacity: 6,
-    package: "Deep Sea Fishing",
-  },
-  {
-    id: "bhqecj4p",
-    amount: 721,
-    status: "available",
-    capacity: 10,
-    package: "Snorkelling",
-  },
-]
-
-export type Payment = {
+export type Package = {
   id: string
   amount: number
-  status: "available" | "unavailable"
+  status: boolean
   capacity: number
-  package: string
+  title: string
+  createdAt: string;
 }
 
-export const columns: ColumnDef<Payment>[] = [
+export const columns: ColumnDef<Package>[] = [
   {
     id: "select",
     header: ({ table }) => (
@@ -100,13 +63,15 @@ export const columns: ColumnDef<Payment>[] = [
     accessorKey: "status",
     header: "Status",
     cell: ({ row }) => (
-      <div className="capitalize">{row.getValue("status")}</div>
+      <div className="capitalize">
+        {row.getValue<boolean>("status") ? "available" : "unavailable"}
+      </div>
     ),
   },
   {
-    accessorKey: "package",
+    accessorKey: "title",
     header: () => <div className="text-left">Package</div>,
-    cell: ({ row }) => <div className="lowercase">{row.getValue("package")}</div>,
+    cell: ({ row }) => <div className="lowercase">{row.getValue("title")}</div>,
   },
   {
     accessorKey: "capacity",
@@ -143,7 +108,7 @@ export const columns: ColumnDef<Payment>[] = [
   },
 ]
 
-export function DataTableDemo() {
+export function DataTableDemo({ packages }: { packages: Package[] }) {
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
@@ -152,8 +117,30 @@ export function DataTableDemo() {
     React.useState<VisibilityState>({})
   const [rowSelection, setRowSelection] = React.useState({})
 
+  console.log("Rendering DataTableDemo with packages:", packages);
+
+  // const [data, setData] = React.useState<Package[]>([]);
+  // const [loading, setLoading] = React.useState(true);
+
+  // React.useEffect(() => {
+  //   const fetchData = async () => {
+  //     try {
+  //       setLoading(true);
+  //       const packages = await fetchBusinessPackages();
+  //       setData(packages);
+  //     } catch (error) {
+  //       console.error("Failed to fetch packages:", error);
+  //       alert("Error loading packages. Please try again.");
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
+
+  //   fetchData();
+  // }, []);
+
   const table = useReactTable({
-    data,
+    data: packages,
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -170,6 +157,10 @@ export function DataTableDemo() {
       rowSelection,
     },
   })
+
+  // if (loading) {
+  //   return <p>Loading...</p>;
+  // }
 
   return (
     <div className="w-full">
