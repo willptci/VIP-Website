@@ -16,6 +16,8 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form"
+import { PackageProps } from '@/types';
+import { addPackageToFirestore } from '@/lib/actions/business.actions';
 
 const NewPackage: React.FC<PackageProps> = ({ setNewPackage }) => {
   const [status, setStatus] = useState(true);
@@ -27,7 +29,7 @@ const NewPackage: React.FC<PackageProps> = ({ setNewPackage }) => {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-        package: "",
+        title: "",
         capacity: "",
         amount: "",
     },
@@ -36,11 +38,22 @@ const NewPackage: React.FC<PackageProps> = ({ setNewPackage }) => {
   const onSubmit = async (data: z.infer<typeof formSchema>) => {
     setIsSubmitting(true);
     try {
-        setNewPackage(false);
-        setIsSubmitting(false);
+      const packageData = {
+        ...data,
+        status,
+      };
+
+      console.log("Package Data to Submit:", packageData);
+
+      await addPackageToFirestore(packageData);
+
+      alert("Package successfully added!");
+
+      setNewPackage(false);
     } catch (error: any) {
       setCreatePackageError(error.message || "An error occurred");
       console.error("Failed to create business:", error);
+    } finally {
       setIsSubmitting(false);
     }
   };
@@ -53,7 +66,7 @@ const NewPackage: React.FC<PackageProps> = ({ setNewPackage }) => {
             <div className="pl-4 pr-4 pb-5">
               <FormField
                   control={form.control}
-                  name="package"
+                  name="title"
                   render={({ field }) => (
                       <FormItem>
                           <FormLabel>Package</FormLabel>

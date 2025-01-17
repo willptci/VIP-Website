@@ -28,11 +28,10 @@ export const businessFormSchema = () => z.object({
   companyName: z.string().optional(),
   ownerDescription: z.string().optional(),
   companyDescription: z.string().optional(),
-  ownerId: z.string(),
 });
 
 export const packageFormSchema = () => z.object({
-  package: z.string().min(1, 'Must enter package label'),
+  title: z.string().min(1, 'Must enter package label'),
   capacity: z.string().min(1, 'Must enter max capacity'),
   amount: z.string().min(1, 'Must enter price'),
 });

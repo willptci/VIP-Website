@@ -93,3 +93,11 @@ interface SliderWithNumberProps {
 interface PackageProps {
   setNewPackage: React.Dispatch<React.SetStateAction<boolean>>;
 }
+
+export interface Package {
+  id: string;
+  amount: number;
+  status: boolean;
+  capacity: number;
+  title: string;
+}

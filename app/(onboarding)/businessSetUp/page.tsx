@@ -16,30 +16,15 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { businessFormSchema } from '@/lib/utils';
-import { addBusinessToFirestore } from '@/lib/actions/user.actions'
-import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { addBusinessToFirestore } from '@/lib/actions/business.actions';
 
 const BusinessSetUp = () => {
 
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [createBusinessError, setCreateBusinessError] = useState<string | null>(null);
-    const [currentUserId, setCurrentUserId] = useState<string | null>(null);
     const router = useRouter();
     
     const formSchema = businessFormSchema();
-
-    useEffect(() => {
-        const auth = getAuth();
-        const unsubscribe = onAuthStateChanged(auth, (user) => {
-          if (user) {
-            setCurrentUserId(user.uid);
-          } else {
-            setCurrentUserId(null);
-          }
-        });
-    
-        return () => unsubscribe(); // Cleanup listener
-      }, []);
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -51,7 +36,6 @@ const BusinessSetUp = () => {
             businessEmail: "",
             ownerDescription: "",
             companyDescription: "",
-            ownerId: "",
         },
     })
 
@@ -62,9 +46,8 @@ const BusinessSetUp = () => {
         setIsSubmitting(true);
         try {
             const businessData = {
-              ...data,
-              ownerId: currentUserId,
-              createdAt: new Date().toISOString(),
+                ...data,
+                createdAt: new Date().toISOString(),
             };
         
             const docId = await addBusinessToFirestore(businessData);
@@ -75,11 +58,11 @@ const BusinessSetUp = () => {
             router.push("/businessCustomize");
 
             setIsSubmitting(false);
-          } catch (error: any) {
+        } catch (error: any) {
             setCreateBusinessError(error.message || "An error occurred");
             console.error("Failed to create business:", error);
             setIsSubmitting(false);
-          }
+        }
     };
 
   return (
