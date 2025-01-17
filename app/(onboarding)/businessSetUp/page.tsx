@@ -1,5 +1,5 @@
 "use client"
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
@@ -17,13 +17,29 @@ import {
 import { Input } from "@/components/ui/input"
 import { businessFormSchema } from '@/lib/utils';
 import { addBusinessToFirestore } from '@/lib/actions/user.actions'
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 
 const BusinessSetUp = () => {
 
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const [createBusinessError, setCreateBusinessError] = useState<string | null>(null);
+    const [currentUserId, setCurrentUserId] = useState<string | null>(null);
     const router = useRouter();
     
     const formSchema = businessFormSchema();
+
+    useEffect(() => {
+        const auth = getAuth();
+        const unsubscribe = onAuthStateChanged(auth, (user) => {
+          if (user) {
+            setCurrentUserId(user.uid);
+          } else {
+            setCurrentUserId(null);
+          }
+        });
+    
+        return () => unsubscribe(); // Cleanup listener
+      }, []);
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -35,6 +51,7 @@ const BusinessSetUp = () => {
             businessEmail: "",
             ownerDescription: "",
             companyDescription: "",
+            ownerId: "",
         },
     })
 
@@ -42,10 +59,12 @@ const BusinessSetUp = () => {
         console.log("Form submitted with data:", data);
         //setIsLoading(true);
         setCreateBusinessError(null);
+        setIsSubmitting(true);
         try {
             const businessData = {
               ...data,
-              createdAt: new Date().toISOString(), // Add timestamp
+              ownerId: currentUserId,
+              createdAt: new Date().toISOString(),
             };
         
             const docId = await addBusinessToFirestore(businessData);
@@ -55,9 +74,11 @@ const BusinessSetUp = () => {
 
             router.push("/businessCustomize");
 
+            setIsSubmitting(false);
           } catch (error: any) {
             setCreateBusinessError(error.message || "An error occurred");
             console.error("Failed to create business:", error);
+            setIsSubmitting(false);
           }
     };
 
@@ -194,7 +215,8 @@ const BusinessSetUp = () => {
                             )}
                         />
                     </div>
-                    <Button type="submit">Submit</Button>
+                    <Button type="submit" disabled={isSubmitting}>{isSubmitting ? "Submitting..." : "Submit"}</Button>
+                    <p className="text-red-600">{createBusinessError}</p>
                 </form>
             </Form>
         </div>

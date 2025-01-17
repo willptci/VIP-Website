@@ -25,6 +25,8 @@ const CustomizeCard: React.FC<CustomizeCardProps> = ({ switches, numberOfImages,
     setShowPackages,
     showContact,
     setShowContact,
+    showCompanyDescription,
+    setShowCompanyDescription
   } = switches;
   return (
     <Card>
@@ -46,6 +48,21 @@ const CustomizeCard: React.FC<CustomizeCardProps> = ({ switches, numberOfImages,
           <Switch
             checked={showCompanyName}
             onCheckedChange={(checked) => setShowCompanyName(checked)}
+          />
+        </div>
+        <div className=" flex items-center space-x-4 rounded-md border p-4">
+          <Plus />
+          <div className="flex-1 space-y-1">
+            <p className="text-sm font-medium leading-none">
+              Advertise Your Business
+            </p>
+            <p className="text-sm text-muted-foreground">
+              How would you describe your business?
+            </p>
+          </div>
+          <Switch
+            checked={showCompanyDescription}
+            onCheckedChange={(checked) => setShowCompanyDescription(checked)}
           />
         </div>
         <div className=" flex items-center space-x-4 rounded-md border p-4">

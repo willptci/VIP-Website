@@ -28,6 +28,8 @@ const businessOnboarding = () => {
   const [contact, setContact] = useState("***-***-****");
   const [isEditingContact, setIsEditingContact] = useState(false);
 
+  const [newPackage, setNewPackage] = useState(false);
+
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
       setIsEditingCompanyName(false);
@@ -65,6 +67,17 @@ const businessOnboarding = () => {
             </div>
           )}
 
+          {!showCompanyName && (
+            <div className="flex gap-5 justify-center items-center">
+              <h1
+                  className="text-36 font-bold text-black"
+                  onClick={() => setIsEditingCompanyName(true)}
+                >
+                  Will Parrish
+                </h1>
+            </div>
+          )}
+
           {showCompanyDescription && (
             <div className="flex mt-10 justify-center items-center gap-10">
               {(numberOfImages > 0) && (
@@ -92,29 +105,60 @@ const businessOnboarding = () => {
           )}
 
           {showWhoYouAre && (
-            <div className="flex mt-10 justify-center items-center gap-10">
-              {isEditingWhoYouAre ? (
-                <Input
-                  type="text"
-                  value={whoYouAre}
-                  onChange={(e) => setWhoYouAre(e.target.value)}
-                  onBlur={() => setIsEditingWhoYouAre(false)}
-                  onKeyDown={handleKeyDown}
-                  className="text-36 font-bold text-black w-auto"
-                  autoFocus
-                />
+            <div>
+              {!showCompanyDescription ? (
+                <div className="flex mt-10 justify-center items-center gap-10">
+                  {(numberOfImages > 1) && (
+                    <div className="flex-col">
+                      <div className="border shadow w-[150px] h-36 rounded-xl"></div>
+                      <p className="mt-2 text-center">Will Parrish</p>
+                    </div>
+                  )}
+                  {isEditingWhoYouAre ? (
+                    <Input
+                      type="text"
+                      value={whoYouAre}
+                      onChange={(e) => setWhoYouAre(e.target.value)}
+                      onBlur={() => setIsEditingWhoYouAre(false)}
+                      onKeyDown={handleKeyDown}
+                      className="text-36 font-bold text-black w-auto"
+                      autoFocus
+                    />
+                  ) : (
+                    <p
+                      className="p-5"
+                      onClick={() => setIsEditingWhoYouAre(true)}
+                    >
+                      {whoYouAre}
+                    </p>
+                  )}
+                </div>
               ) : (
-                <p
-                  className="p-5"
-                  onClick={() => setIsEditingWhoYouAre(true)}
-                >
-                  {whoYouAre}
-                </p>
-              )}
-              {(numberOfImages > 1) && (
-                <div className="flex-col">
-                  <div className="border shadow w-[150px] h-36 rounded-xl"></div>
-                  <p className="mt-2 text-center">Will Parrish</p>
+                <div className="flex mt-10 justify-center items-center gap-10">
+                  {isEditingWhoYouAre ? (
+                    <Input
+                      type="text"
+                      value={whoYouAre}
+                      onChange={(e) => setWhoYouAre(e.target.value)}
+                      onBlur={() => setIsEditingWhoYouAre(false)}
+                      onKeyDown={handleKeyDown}
+                      className="text-36 font-bold text-black w-auto"
+                      autoFocus
+                    />
+                  ) : (
+                    <p
+                      className="p-5"
+                      onClick={() => setIsEditingWhoYouAre(true)}
+                    >
+                      {whoYouAre}
+                    </p>
+                  )}
+                  {(numberOfImages > 1) && (
+                    <div className="flex-col">
+                      <div className="border shadow w-[150px] h-36 rounded-xl"></div>
+                      <p className="mt-2 text-center">Will Parrish</p>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -148,7 +192,7 @@ const businessOnboarding = () => {
             <div>
               <div className="p-5">
                 <DataTableDemo/>
-                <Button variant="secondary" className="flex-shrink-0 mt-3"><Plus/> add package</Button>
+                <Button variant="secondary" className="flex-shrink-0 mt-3" onClick={() => setNewPackage(true)}><Plus/> add package</Button>
               </div>
               {(numberOfImages > 2) && (
                 <div className="p-5 ml-10 mr-10">
@@ -169,11 +213,17 @@ const businessOnboarding = () => {
               setShowPackages,
               showContact,
               setShowContact,
+              showCompanyDescription,
+              setShowCompanyDescription
             }}
             numberOfImages={numberOfImages}
             setNumberOfImages={setNumberOfImages}
           />
-          <NewPackage/>
+          {newPackage && (
+            <NewPackage
+              setNewPackage={setNewPackage}
+            />
+          )}
         </div>
       </div>
     </section>
