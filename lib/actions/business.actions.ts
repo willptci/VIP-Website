@@ -1,7 +1,9 @@
 import { doc, setDoc, updateDoc, getDoc, getDocs, query, where, collection, addDoc, arrayUnion } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 import { auth, db } from "@/firebase/firebaseConfig";
-import { Package } from "@/types";
+import { BusinessData, Package, SettingsData, ShowcasingBusinessData } from "@/types";
+import { storage } from "@/firebase/firebaseConfig";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 export const addBusinessToFirestore = async (businessData: Record<string, any>) => {
     try {
@@ -34,15 +36,18 @@ export const addBusinessToFirestore = async (businessData: Record<string, any>) 
     }
 };
 
-
 export const fetchBusinessData = async (businessId: string) => {
   try {
-    const docRef = doc(db, "businesses", businessId); // Fetch the document using the UID
+    const docRef = doc(db, "businesses", businessId);
     const docSnap = await getDoc(docRef);
 
     if (docSnap.exists()) {
-      console.log("Business data fetched successfully:", docSnap.data());
-      return docSnap.data(); // Return the document data
+      const data = docSnap.data();
+      return {
+        photos: [],
+        numberOfImages: 5,
+        ...data, // Merge with Firestore data
+      };
     } else {
       throw new Error("No business data found for this user.");
     }
@@ -115,44 +120,6 @@ export const fetchBusinessPackages = async (): Promise<Package[]> => {
   }
 };
 
-// export const addPackageToFirestore = async (packageData: Record<string, any>) => {
-//   try {
-//     // Step 1: Get the authenticated user's UID
-//     const auth = getAuth();
-//     const currentUser = auth.currentUser;
-
-//     if (!currentUser) {
-//       throw new Error("User is not authenticated. Unable to create package.");
-//     }
-
-//     const businessId = currentUser.uid; // Use UID as the business document ID
-
-//     // Step 2: Create a new package document in the `packages` collection
-//     const packageId = `${businessId}_${Date.now()}`; // Unique ID for the package
-//     const packageRef = doc(db, "packages", packageId);
-
-//     const completePackageData = {
-//       ...packageData,
-//       createdAt: new Date().toISOString(),
-//     };
-
-//     await setDoc(packageRef, completePackageData);
-//     console.log("Package document created with ID:", packageId);
-
-//     // Step 3: Add the package ID to the `packages` array in the business document
-//     const businessRef = doc(db, "businesses", businessId);
-//     await updateDoc(businessRef, {
-//       packages: arrayUnion(packageId),
-//     });
-//     console.log(`Package ID ${packageId} added to business ${businessId}`);
-
-//     return packageId; // Return the created package ID
-//   } catch (error) {
-//     console.error("Error adding package to Firestore:", error);
-//     throw error;
-//   }
-// };
-
 export const addPackageToFirestore = async (packageData: Record<string, any>): Promise<Package> => {
   try {
     const auth = getAuth();
@@ -163,7 +130,7 @@ export const addPackageToFirestore = async (packageData: Record<string, any>): P
     }
 
     const businessId = currentUser.uid;
-    const packageId = `${businessId}_${Date.now()}`; // Unique ID for the package
+    const packageId = packageData.id;
     const packageRef = doc(db, "packages", packageId);
 
     const completePackageData = {
@@ -188,6 +155,186 @@ export const addPackageToFirestore = async (packageData: Record<string, any>): P
     } as Package;
   } catch (error) {
     console.error("Error adding package to Firestore:", error);
+    throw error;
+  }
+};
+
+export const uploadPhotoForBusiness = async (
+  file: File,
+  businessId: string
+): Promise<string> => {
+  try {
+    const fileName = `${Date.now()}_${file.name}`;
+    const storageRef = ref(storage, `users/${businessId}/${fileName}`);
+    const snapshot = await uploadBytes(storageRef, file);
+    const downloadURL = await getDownloadURL(snapshot.ref);
+
+    // Save the URL to Firestore
+    const businessDoc = doc(db, "businesses", businessId);
+    await updateDoc(businessDoc, {
+      photos: arrayUnion(downloadURL),
+    });
+
+    return downloadURL;
+  } catch (error) {
+    console.error("Error uploading photo:", error);
+    throw error;
+  }
+};
+
+export const saveNumberOfImages = async (count: number) => {
+  const auth = getAuth();
+  const currentUser = auth.currentUser;
+
+  if (!currentUser) {
+    throw new Error("User is not authenticated.");
+  }
+
+  const businessId = currentUser.uid; // Get the authenticated user's ID
+  const businessDoc = doc(db, "businesses", businessId);
+
+  try {
+    await updateDoc(businessDoc, { numberOfImages: count });
+    console.log(`Successfully updated numberOfImages to ${count}`);
+  } catch (error) {
+    console.error("Error updating numberOfImages:", error);
+    throw new Error("Failed to update numberOfImages in Firestore.");
+  }
+};
+
+export const fetchCompanies = async () => {
+  try {
+    const querySnapshot = await getDocs(collection(db, "businesses"));
+    return querySnapshot.docs.map((doc) => ({
+      $id: doc.id,
+      ...doc.data(),
+    }));
+  } catch (error) {
+    console.error("Error fetching companies:", error);
+    throw error;
+  }
+};
+
+export const fetchShowcasingBusinessData = async (
+  businessId: string
+): Promise<ShowcasingBusinessData> => {
+  try {
+    const businessDocRef = doc(db, "businesses", businessId);
+    const businessDoc = await getDoc(businessDocRef);
+
+    if (!businessDoc.exists()) {
+      throw new Error("Business document not found.");
+    }
+
+    const businessData = businessDoc.data() as BusinessData;
+
+    // Fetch settings using settingsId
+    const settingsId = businessData.settingsId;
+    const settings = await fetchSettings(settingsId) as SettingsData;
+
+    return {
+      ...businessData,
+      settings, // Include settings
+    };
+  } catch (error) {
+    console.error("Error fetching business data:", error);
+    throw error;
+  }
+};
+
+export const saveSettings = async (settings: Record<string, boolean | number>) => {
+  try {
+    const auth = getAuth();
+    const currentUser = auth.currentUser;
+
+    if (!currentUser) {
+      throw new Error("User is not authenticated.");
+    }
+
+    const authId = currentUser.uid;
+
+    const businessDocRef = doc(db, "businesses", authId);
+    const businessDoc = await getDoc(businessDocRef);
+
+    if (!businessDoc.exists()) {
+      throw new Error("No business found for the given authId.");
+    }
+
+    const businessId = authId;
+
+    const settingsDocRef = doc(db, "settings", `${businessId}-settings`);
+
+    // Create or update the settings document
+    await setDoc(settingsDocRef, settings, { merge: true });
+
+    // Link the settings document in the businesses collection
+    await updateDoc(businessDocRef, { settingsId: `${businessId}-settings` });
+
+    console.log("Settings saved successfully.");
+  } catch (error) {
+    console.error("Error saving settings:", error);
+    throw new Error("Failed to save settings.");
+  }
+};
+
+export const fetchSettings = async (settingsId: string) => {
+  try {
+    // Reference the settings document
+    const settingsDocRef = doc(db, "settings", settingsId);
+    const settingsDoc = await getDoc(settingsDocRef);
+
+    // Check if the document exists
+    if (!settingsDoc.exists()) {
+      throw new Error("Settings document not found.");
+    }
+
+    // Return the settings data
+    return settingsDoc.data();
+  } catch (error) {
+    console.error("Error fetching settings:", error);
+    throw error;
+  }
+};
+
+export const fetchShowcasingBusinessPackages = async (
+  businessId: string
+): Promise<Package[]> => {
+  try {
+    // Fetch the business document
+    const businessDoc = await getDoc(doc(db, "businesses", businessId));
+
+    if (!businessDoc.exists()) {
+      throw new Error("Business not found.");
+    }
+
+    // Retrieve package IDs from the business document
+    const packageIds: string[] = businessDoc.data().packages || [];
+
+    // Fetch all package documents associated with the IDs
+    const packagePromises = packageIds.map(async (id) => {
+      const packageDoc = await getDoc(doc(db, "packages", id));
+      if (!packageDoc.exists()) {
+        return null;
+      }
+
+      const packageData = packageDoc.data();
+      return {
+        id: packageDoc.id,
+        amount: packageData.amount || 0,
+        status: packageData.status || false,
+        capacity: packageData.capacity || 0,
+        title: packageData.title || "",
+      } as Package;
+    });
+
+    // Resolve all package promises and filter out null values
+    const packages = (await Promise.all(packagePromises)).filter(
+      (pkg) => pkg !== null
+    ) as Package[];
+
+    return packages;
+  } catch (error) {
+    console.error("Error fetching business packages:", error);
     throw error;
   }
 };

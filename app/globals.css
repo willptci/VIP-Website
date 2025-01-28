@@ -109,44 +109,13 @@
   }
 
   /* Home */
-  .home {
-    @apply no-scrollbar flex w-full flex-row max-xl:max-h-screen max-xl:overflow-y-scroll;
-  }
-
-  .home-content {
-    @apply no-scrollbar flex w-full flex-1 flex-col gap-8 px-5 sm:px-8 py-7 lg:py-12 xl:max-h-screen xl:overflow-y-scroll;
-  }
-
-  .home-header {
-    @apply flex flex-col justify-between gap-8;
-  }
-
-  .home-companies {
-    @apply flex flex-wrap justify-between pl-32 pr-32 pb-5 pt-5;
-  }
-
-  .company-profile-box {
-    @apply w-80 h-96 items-center gap-4 rounded-xl border border-gray-200 p-4 shadow-chart sm:gap-6 sm:p-6 mb-10;
-  }
-
-  .company-profile-box-img {
-    @apply rounded-xl w-full h-full object-cover shadow-profile;
-  }
-
-  .company-image-box {
-    @apply h-52 flex justify-center;
-  }
 
   .company-details {
-    @apply flex flex-col justify-between p-3 h-36;
+    @apply flex flex-col justify-between p-3;
   }
 
   .business-name {
-    @apply text-18 lg:text-24 font-semibold text-gray-900 overflow-hidden whitespace-nowrap overflow-ellipsis; /* Apply max width */
-  }
-
-  .business-product {
-    @apply text-14 lg:text-16 font-normal text-gray-600 p-0.5;
+    @apply text-3xl font-semibold text-gray-900 overflow-hidden whitespace-nowrap overflow-ellipsis;
   }
 
   .business-guide {
@@ -163,6 +132,50 @@
 
   .nav-to-end {
     @apply flex;
+  }
+
+  /* SemiCircleNav */
+
+  .horizontal-semi-circle-nav {
+    position: relative;
+    width: 300px;
+    /* Full semi-circle width */
+    height: 150px;
+    /* Semi-circle height */
+    margin: 0 auto;
+    /* Center the semi-circle horizontally */
+    border-top-left-radius: 150px;
+    border-top-right-radius: 150px;
+    overflow: hidden;
+
+    border: 2px solid #00796b;
+  
+    .nav-item {
+      position: absolute;
+      top: 50%;
+      /* Center items vertically relative to the semi-circle */
+      left: 50%;
+      /* Center items horizontally */
+      transform-origin: center bottom;
+      /* Rotate around the semi-circle center */
+      text-align: center;
+      cursor: pointer;
+  
+      .label {
+        font-size: 14px;
+        font-weight: bold;
+      }
+  
+      .sub-label {
+        font-size: 12px;
+        color: #777;
+      }
+  
+      &:hover {
+        transform: scale(1.2) translateY(-10px);
+        /* Hover effect */
+      }
+    }
   }
 
 }

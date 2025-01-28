@@ -16,10 +16,10 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form"
-import { PackageProps } from '@/types';
+import { NewPackageProps, Package } from '@/types';
 import { addPackageToFirestore } from '@/lib/actions/business.actions';
 
-const NewPackage: React.FC<PackageProps> = ({ setNewPackage }) => {
+const NewPackage: React.FC<NewPackageProps>  = ({ setNewPackage, addPackage }) => {
   const [status, setStatus] = useState(true);
   const [createPackageError, setCreatePackageError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -35,20 +35,45 @@ const NewPackage: React.FC<PackageProps> = ({ setNewPackage }) => {
     },
   })
 
+  // const onSubmit = async (data: z.infer<typeof formSchema>) => {
+  //   setIsSubmitting(true);
+  //   try {
+  //     const packageData = {
+  //       ...data,
+  //       status,
+  //     };
+
+  //     console.log("Package Data to Submit:", packageData);
+
+  //     const newPackage = await addPackageToFirestore(packageData);
+  //     addPackage(newPackage);
+
+  //     alert("Package successfully added!");
+
+  //     setNewPackage(false);
+  //   } catch (error: any) {
+  //     setCreatePackageError(error.message || "An error occurred");
+  //     console.error("Failed to create business:", error);
+  //   } finally {
+  //     setIsSubmitting(false);
+  //   }
+  // };
+
   const onSubmit = async (data: z.infer<typeof formSchema>) => {
     setIsSubmitting(true);
     try {
-      const packageData = {
+      const packageData: Package = {
         ...data,
+        id: crypto.randomUUID(),
         status,
+        createdAt: new Date().toISOString(),
       };
-
+  
       console.log("Package Data to Submit:", packageData);
-
+  
       await addPackageToFirestore(packageData);
-
+      addPackage(packageData);
       alert("Package successfully added!");
-
       setNewPackage(false);
     } catch (error: any) {
       setCreatePackageError(error.message || "An error occurred");
@@ -56,7 +81,7 @@ const NewPackage: React.FC<PackageProps> = ({ setNewPackage }) => {
     } finally {
       setIsSubmitting(false);
     }
-  };
+  };  
 
   return (
     <div className="rounded-xl border p-5 shadow mt-10">
@@ -103,7 +128,7 @@ const NewPackage: React.FC<PackageProps> = ({ setNewPackage }) => {
                       <FormItem>
                           <FormLabel>Price</FormLabel>
                           <FormControl>
-                              <Input placeholder="Max Number of Guests Allowed" {...field} className="max-w-sm"/>
+                              <Input placeholder="Cost of Package" {...field} className="max-w-sm"/>
                           </FormControl>
                           <FormMessage />
                       </FormItem>

@@ -14,6 +14,8 @@ import {
 } from "@/components/ui/card"
 import { Switch } from "@/components/ui/switch"
 import SliderWithNumber from "@/components/ui/NumberSlider";
+import { CustomizeCardProps } from "@/types";
+import { saveNumberOfImages } from "@/lib/actions/business.actions";
 
 const CustomizeCard: React.FC<CustomizeCardProps> = ({ switches, numberOfImages, setNumberOfImages, }) => {
   const {
@@ -112,7 +114,12 @@ const CustomizeCard: React.FC<CustomizeCardProps> = ({ switches, numberOfImages,
         </div>
         <SliderWithNumber
           value={numberOfImages}
-          onValueChange={(value) => setNumberOfImages(value)}
+          onValueChange={(value: number) => {
+            setNumberOfImages(value);
+            saveNumberOfImages(value).catch((error) =>
+              console.error("Failed to save numberOfImages:", error)
+            );
+          }}
         />
       </CardContent>
       <CardFooter>

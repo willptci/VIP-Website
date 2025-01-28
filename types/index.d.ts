@@ -1,5 +1,7 @@
 /* eslint-disable no-unused-vars */
 
+import { saveNumberOfImages } from "@/lib/actions/business.actions";
+
 declare type SearchParamProps = {
   params: { [key: string]: string };
   searchParams: { [key: string]: string | string[] | undefined };
@@ -66,6 +68,7 @@ declare type Business = {
   packages?: string[];
   reviews?: string[];
   photos?: string[];
+  settingsId: string;
 };
 
 declare interface CustomizeCardProps {
@@ -90,16 +93,43 @@ interface SliderWithNumberProps {
   onValueChange: (value: number) => void;
 }
 
-export interface PackageProps {
-  setNewPackage: React.Dispatch<React.SetStateAction<boolean>>;
-  addPackage: (newPackage: Package) => void;
-}
-
 export interface Package {
   id: string;
-  amount: number;
+  amount: string;
   status: boolean;
-  capacity: number;
+  capacity: string;
   title: string;
   createdAt: string;
+}
+
+interface NewPackageProps {
+  addPackage: (newPackage: Package) => void;
+  setNewPackage: (value: boolean) => void;
+}
+
+export interface BusinessData {
+  companyName: string;
+  firstName: string;
+  lastName: string;
+  photos?: string[];
+  settingsId: string;
+  phoneNumber: string;
+  ownerDescription?: string;
+  companyDescription?: string;
+  packages?: string[];
+  settingsId: string;
+  // reviews?: string[];
+}
+
+export interface SettingsData {
+  showCompanyName: boolean;
+  showCompanyDescription: boolean;
+  showWhoYouAre: boolean;
+  showPackages: boolean;
+  showContact: boolean;
+  numberOfImages: number;
+}
+
+export interface ShowcasingBusinessData extends BusinessData {
+  settings: SettingsData;
 }
