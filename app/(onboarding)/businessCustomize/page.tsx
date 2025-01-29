@@ -4,22 +4,24 @@ import { useRouter } from "next/navigation";
 import { fetchBusinessData, fetchBusinessPackages, saveSettings, updateBusinessField, uploadPhotoForBusiness } from '@/lib/actions/business.actions'
 import CustomizeCard from "@/components/ui/CustomizeCard";
 import { DataTableDemo } from "@/components/ui/PackageTable";
-import { ProfileCarousel } from "@/components/ui/ProfileCarousel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus } from "lucide-react"
-import NewPackage from "@/components/ui/new-package";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { Package } from "@/types";
 import { Textarea } from "@/components/ui/textarea";
+import AddPackage from "@/components/ui/AddPackage";
 
 const businessOnboarding = () => {
   const [showCompanyName, setShowCompanyName] = useState(true);
   const [showCompanyDescription, setShowCompanyDescription] = useState(true);
   const [showWhoYouAre, setShowWhoYouAre] = useState(true);
-  const [showPackages, setShowPackages] = useState(true);
   const [showContact, setShowContact] = useState(true);
-  const [numberOfImages, setNumberOfImages] = useState(5);
+  const [showBackground, setShowBackground] = useState(true);
+
+  const [selectedPackage, setSelectedPackage] = React.useState<Package | null>(
+    null
+  );
 
   const router = useRouter();
   const [businessData, setBusinessData] = useState<any>(null);
@@ -29,7 +31,6 @@ const businessOnboarding = () => {
     ownerDescription: false,
     phoneNumber: false,
   });
-  const [newPackage, setNewPackage] = useState(false);
   const [loading, setLoading] = useState(true);
   const [authId, setAuthId] = useState<string | null>(null);
 
@@ -118,9 +119,8 @@ const businessOnboarding = () => {
         showCompanyName,
         showCompanyDescription,
         showWhoYouAre,
-        showPackages,
         showContact,
-        numberOfImages,
+        showBackground,
       };
   
       await saveSettings(settings);
@@ -182,7 +182,6 @@ const businessOnboarding = () => {
 
           {showCompanyDescription && (
             <div className="flex mt-10 justify-center items-center gap-10">
-              {(numberOfImages > 0) && (
                 <div>
                   {businessData.photos?.[0] ? (
                     <div
@@ -207,7 +206,6 @@ const businessOnboarding = () => {
                     </Button>
                   )}
                 </div>
-              )}
               {isEditing.companyDescription ? (
                 <Textarea
                 value={businessData.companyDescription}
@@ -232,7 +230,6 @@ const businessOnboarding = () => {
             <div>
               {!showCompanyDescription ? (
                 <div className="flex mt-10 justify-center items-center gap-10">
-                  {(numberOfImages > 1) && (
                     <div className="flex-col">
                       <div>
                         {businessData.photos?.[1] ? (
@@ -262,7 +259,6 @@ const businessOnboarding = () => {
                         <p className="mt-2 text-center">{businessData.firstName + " " + businessData.lastName}</p>
                       )}
                     </div>
-                  )}
                   {isEditing.ownerDescription ? (
                     <Textarea
                       value={businessData.ownerDescription}
@@ -300,7 +296,6 @@ const businessOnboarding = () => {
                       {businessData.ownerDescription}
                     </p>
                   )}
-                  {(numberOfImages > 1) && (
                     <div className="flex-col">
                       <div>
                         {businessData.photos?.[1] ? (
@@ -330,7 +325,6 @@ const businessOnboarding = () => {
                         <p className="mt-2 text-center">{businessData.firstName + " " + businessData.lastName}</p>
                       )}
                     </div>
-                  )}
                 </div>
               )}
             </div>
@@ -360,24 +354,52 @@ const businessOnboarding = () => {
             </div>
           )}
 
-          {showPackages && (
+          {showBackground && (
+            <section
+              className="h-[60vh] bg-fixed bg-cover bg-center flex items-center justify-center"
+              style={{
+                backgroundImage: businessData?.photos[2]
+                  ? `url(${businessData.photos[2]})`
+                  : 'none',
+              }}
+            >
+              <div className="text-white text-center bg-black bg-opacity-50 p-8 rounded-lg">
+                <h2 className="text-4xl font-bold">Welcome to Our Business</h2>
+                <p className="text-xl mt-4">
+                  Scroll to see more about {businessData.companyName || "our offerings"}!
+                </p>
+                <div className="mt-4">
+                  <Button
+                    variant="secondary"
+                    onClick={() => handleImageUpload(2)}
+                  >
+                    {businessData?.backgroundImage ? "Change Background" : "Add Background"}
+                  </Button>
+                </div>
+              </div>
+            </section>
+          )}
+
             <div>
               <div className="p-5">
-                {/* <DataTableDemo packages={tableData} onSelectPackage={}/> */}
-                <Button variant="secondary" className="flex-shrink-0 mt-3" onClick={() => setNewPackage(true)}><Plus/> add package</Button>
+                <DataTableDemo packages={tableData} onSelectPackage={setSelectedPackage}/>
+                <div className="pt-4">
+                  <AddPackage 
+                    addPackage={(newPackage: Package) =>
+                      setTableData((prev) => [...prev, newPackage])
+                    }
+                  />
+                </div>
               </div>
-              {(numberOfImages > 2) && (
                 <div className="p-5 ml-10 mr-10">
-                  <ProfileCarousel
+                  {/* <ProfileCarousel
                     photos={businessData?.photos || []} // Pass photos array
                     numberOfImages={numberOfImages - 2} // Exclude the first two images
                     setNumberOfImages={setNumberOfImages}
                     handleImageUpload={handleImageUpload}
-                  />
+                  /> */}
                 </div>
-              )}
             </div>
-          )}
         </div>
         <div className="pl-10 w-auto">
           <CustomizeCard
@@ -386,24 +408,14 @@ const businessOnboarding = () => {
               setShowCompanyName,
               showWhoYouAre,
               setShowWhoYouAre,
-              showPackages,
-              setShowPackages,
               showContact,
               setShowContact,
               showCompanyDescription,
-              setShowCompanyDescription
+              setShowCompanyDescription,
+              showBackground,
+              setShowBackground,
             }}
-            numberOfImages={numberOfImages}
-            setNumberOfImages={setNumberOfImages}
           />
-          {newPackage && (
-            <NewPackage
-              setNewPackage={setNewPackage}
-              addPackage={(newPackage: Package) =>
-                setTableData((prev) => [...prev, newPackage])
-              }
-            />
-          )}
         </div>
       </div>
     </section>

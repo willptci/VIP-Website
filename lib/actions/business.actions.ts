@@ -182,6 +182,20 @@ export const uploadPhotoForBusiness = async (
   }
 };
 
+export const uploadPhotoForPackage = async (file: File): Promise<string> => {
+  try {
+      const fileName = `${Date.now()}_${file.name}`;
+      const storageRef = ref(storage, `packages/${fileName}`);
+      const snapshot = await uploadBytes(storageRef, file);
+      const downloadURL = await getDownloadURL(snapshot.ref);
+      
+      return downloadURL;
+  } catch (error) {
+      console.error("Error uploading photo:", error);
+      throw error;
+  }
+};
+
 export const saveNumberOfImages = async (count: number) => {
   const auth = getAuth();
   const currentUser = auth.currentUser;
@@ -323,7 +337,13 @@ export const fetchShowcasingBusinessPackages = async (
         amount: packageData.amount || 0,
         status: packageData.status || false,
         capacity: packageData.capacity || 0,
-        title: packageData.title || "",
+        title: packageData.title || "package",
+        per: packageData.per || "person",
+        what: packageData.what || "",
+        time: packageData.time || "",
+        included: packageData.included || "",
+        total: packageData.total || "",
+        bring: packageData.bring || "",
       } as Package;
     });
 

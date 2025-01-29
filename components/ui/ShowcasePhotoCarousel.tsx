@@ -13,15 +13,13 @@ interface PhotoCarouselProps {
 }
 
 export function PhotoCarousel({ photos }: PhotoCarouselProps) {
-  // Filter photos from index 2 onwards
-  const filteredPhotos = photos.slice(2);
 
   return (
     <div className="w-full">
       <Carousel>
         <CarouselContent>
-          {filteredPhotos.length > 0 ? (
-            filteredPhotos.map((photo, index) => (
+          {photos?.length > 0 && (
+            photos.map((photo, index) => (
               <CarouselItem
                 key={index}
                 className="w-full h-[400px] sm:h-[500px] md:h-[600px]"
@@ -37,10 +35,6 @@ export function PhotoCarousel({ photos }: PhotoCarouselProps) {
                 </Card>
               </CarouselItem>
             ))
-          ) : (
-            <div className="flex items-center justify-center w-full h-[400px] sm:h-[500px] md:h-[600px]">
-              <p className="text-lg font-semibold">No photos available</p>
-            </div>
           )}
         </CarouselContent>
         <CarouselPrevious />

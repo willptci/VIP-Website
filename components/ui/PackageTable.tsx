@@ -48,6 +48,11 @@ export const columns: ColumnDef<Package>[] = [
     cell: ({ row }) => <div>{row.getValue("capacity")}</div>,
   },
   {
+    accessorKey: "total",
+    header: "Time",
+    cell: ({ row }) => <div>{row.getValue("total")}</div>,
+  },
+  {
     accessorKey: "rating",
     header: "Rating",
     cell: ({ row }) => <div>5</div>,
@@ -79,7 +84,7 @@ export const columns: ColumnDef<Package>[] = [
   {
     accessorKey: "per",
     header: "Per",
-    cell: ({ row }) => <div className="flex justiify-end">Person</div>,
+    cell: ({ row }) => <div className="flex justiify-end">{row.getValue("per")}</div>,
   },
 ];
 

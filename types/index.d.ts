@@ -77,15 +77,17 @@ declare interface CustomizeCardProps {
     setShowCompanyName: React.Dispatch<React.SetStateAction<boolean>>;
     showWhoYouAre: boolean;
     setShowWhoYouAre: React.Dispatch<React.SetStateAction<boolean>>;
-    showPackages: boolean;
-    setShowPackages: React.Dispatch<React.SetStateAction<boolean>>;
+    // showPackages: boolean;
+    // setShowPackages: React.Dispatch<React.SetStateAction<boolean>>;
     showContact: boolean;
     setShowContact: React.Dispatch<React.SetStateAction<boolean>>;
     showCompanyDescription: boolean;
     setShowCompanyDescription: React.Dispatch<React.SetStateAction<boolean>>;
+    showBackground: boolean;
+    setShowBackground: React.Dispatch<React.SetStateAction<boolean>>;
   };
-  numberOfImages: number;
-  setNumberOfImages: React.Dispatch<React.SetStateAction<number>>;
+  // numberOfImages: number;
+  // setNumberOfImages: React.Dispatch<React.SetStateAction<number>>;
 }
 
 interface SliderWithNumberProps {
@@ -100,11 +102,18 @@ export interface Package {
   capacity: string;
   title: string;
   createdAt: string;
+  per: string;
+  what: string;
+  time: string;
+  included: string;
+  bring: string;
+  total: number;
+  photos: string[];
 }
 
 interface NewPackageProps {
   addPackage: (newPackage: Package) => void;
-  setNewPackage: (value: boolean) => void;
+  // setNewPackage: (value: boolean) => void;
 }
 
 export interface BusinessData {

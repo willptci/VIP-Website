@@ -34,6 +34,12 @@ export const packageFormSchema = () => z.object({
   title: z.string().min(1, 'Must enter package label'),
   capacity: z.string().min(1, 'Must enter max capacity'),
   amount: z.string().min(1, 'Must enter price'),
+  per: z.string().min(1, 'Must enter what price is per'),
+  what: z.string().min(1, 'Must give a itinerary of the package'),
+  time: z.string().min(1, 'Must enter how long this package will take'),
+  included: z.string().min(1, 'Must enter what is included with package'),
+  bring: z.string().min(1, 'Must enter specifics guests are welcome to bring'),
+  total: z.number().min(0.25, 'Total must be at least 15 minutes'),
 });
 
 export const parseStringify = (value: any) => JSON.parse(JSON.stringify(value));
