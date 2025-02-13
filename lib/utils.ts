@@ -10,6 +10,9 @@ export const authFormSchema = (type: string) => z.object({
   email: z.string().email(),
   password: z.string().min(8),
   verifiedPassword: type === 'sign-in' ? z.string().optional() : z.string().min(8),
+  firstName: type === 'sign-in' ? z.string().optional() : z.string().min(2),
+  lastName: type === 'sign-in' ? z.string().optional() : z.string().min(2),
+  role: z.enum(["user", "business"]).optional(),
 }).superRefine(({ verifiedPassword, password }, ctx) => {
   if (type == 'sign-up' && verifiedPassword !== password) {
     ctx.addIssue({

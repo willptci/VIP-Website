@@ -1,9 +1,11 @@
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } from "firebase/auth";
-import { auth, firebaseConfig, db } from "@/firebase/firebaseConfig";
-import { collection, addDoc } from "firebase/firestore";
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, updateProfile } from "firebase/auth";
+import { auth, firebaseConfig, db, storage } from "@/firebase/firebaseConfig";
+import { collection, addDoc, getDoc, doc, updateDoc, setDoc } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
+import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
+import { SignInProps, SignUpParams, User } from "@/types";
 
-export const signIn = async ({ email, password }: { email: string; password: string }) => {
+export const signIn = async ({ email, password }: SignInProps) => {
 
   if (typeof window === "undefined") {
     throw new Error("Firebase Auth can only be used client-side.");
@@ -21,10 +23,24 @@ export const signIn = async ({ email, password }: { email: string; password: str
   }
 };
 
-export const signUp = async ({ email, password }: { email: string; password: string }) => {
+export const signUp = async ({ email, password, firstName, lastName, role }: SignUpParams) => {
   try {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
+
+    const userData = {
+      uid: user.uid,
+      role,
+      email,
+      firstName,
+      lastName,
+      telephone: '',
+      description: '',
+      profileImageUrl: '',
+      isVerified: false,
+    };
+
+    await setDoc(doc(db, 'users', user.uid), userData);
 
     console.log("User signed up:", user);
     return user;
@@ -34,32 +50,86 @@ export const signUp = async ({ email, password }: { email: string; password: str
   }
 };
 
+// export const updateUserProfile = async (profileData: { displayName?: string; photoURL?: string }) => {
+//   const user = auth.currentUser;
+
+//   if (user) {
+//     try {
+//       await updateProfile(user, profileData);
+//       console.log("User profile updated:", user);
+//       return user;
+//     } catch (error) {
+//       console.error("Error updating profile:", error);
+//       throw error;
+//     }
+//   } else {
+//     console.warn("No user is currently logged in.");
+//   }
+// };
+
+export const updateUserProfile = async (userId: string, profileData: Partial<User>) => {
+  try {
+    const userRef = doc(db, "users", userId);
+    await updateDoc(userRef, profileData);
+  } catch (error) {
+    console.error("Error updating profile:", error);
+    throw error;
+  }
+};
+
+export const getLoggedInUser = async () => {
+  return auth.currentUser;
+};
+
+// export const getUserInfo = async (userId: string) => {
+//   try {
+//     const userRef = doc(db, "users", userId);
+//     const userSnap = await getDoc(userRef);
+//     return userSnap.exists() ? userSnap.data() : null;
+//   } catch (error) {
+//     console.error("Error fetching user info:", error);
+//     return null;
+//   }
+// };
+
+export const getUserInfo = async (userId: string) => {
+  try {
+    const userDoc = await getDoc(doc(db, 'users', userId));
+
+    if (!userDoc.exists()) {
+      throw new Error('User data not found');
+    }
+
+    return userDoc.data();
+  } catch (error) {
+    console.error('Error fetching user info:', error);
+    throw error;
+  }
+};
+
+export const uploadProfileImage = async (file: File, userId: string) => {
+  try {
+    const storageRef = ref(storage, `profileImages/${userId}`);
+    await uploadBytes(storageRef, file);
+    const downloadUrl = await getDownloadURL(storageRef);
+
+    // Update Firestore with the new profile image URL
+    await updateUserProfile(userId, { profileImageUrl: downloadUrl });
+
+    return downloadUrl;
+  } catch (error) {
+    console.error("Error uploading profile image:", error);
+    throw error;
+  }
+};
+
 export const logout = async () => {
   try {
-    await auth.signOut();
-    console.log("User signed out successfully.");
+    await signOut(auth);
   } catch (error) {
     console.error("Error signing out:", error);
   }
 };
-
-export const updateUserProfile = async (profileData: { displayName?: string; photoURL?: string }) => {
-  const user = auth.currentUser;
-
-  if (user) {
-    try {
-      await updateProfile(user, profileData);
-      console.log("User profile updated:", user);
-      return user;
-    } catch (error) {
-      console.error("Error updating profile:", error);
-      throw error;
-    }
-  } else {
-    console.warn("No user is currently logged in.");
-  }
-};
-
 
 
 // export const setCustomClaims = async (uid: string, claims: { business?: boolean }) => {

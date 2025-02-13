@@ -344,6 +344,7 @@ export const fetchShowcasingBusinessPackages = async (
         included: packageData.included || "",
         total: packageData.total || "",
         bring: packageData.bring || "",
+        photos: packageData.photos || [],
       } as Package;
     });
 

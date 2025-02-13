@@ -27,7 +27,7 @@ export default function BusinessPageClient({
   return (
     <div>
       {/* Header Section */}
-      <section className="p-20 h-full flex flex-col justify-center bg-grey-50">
+      <section className="p-20 h-full flex flex-col justify-center text-custom-8 font-syne">
         <div className="pl-12 pb-8">
           <h1 className="text-6xl font-bold text-black">
             {businessData.settings?.showCompanyName
@@ -103,7 +103,7 @@ export default function BusinessPageClient({
       </section>
 
       {/* Packages and Booking Section */}
-      <section className="p-4 h-full flex justify-center bg-grey-50">
+      <section className="p-4 h-full flex justify-center text-custom-8 font-syne ">
         <div className="flex-col p-5 w-full ml-4 pt-14">
           <div>
             <p className="text-5xl font-semibold">Our Packages</p>
@@ -115,7 +115,7 @@ export default function BusinessPageClient({
             />
           </div>
         </div>
-        <div className="p-10">
+        <div className="pt-10 pr-10">
           <BookNowCard
             businessName={businessData.companyName || "Business Name"}
             selectedPackage={selectedPackage}

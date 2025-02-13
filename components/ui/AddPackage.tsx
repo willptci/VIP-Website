@@ -96,10 +96,10 @@ const AddPackage: React.FC<NewPackageProps>  = ({ addPackage }) => {
                     Add Package
                 </Button>
             </DrawerTrigger>
-            <DrawerContent className="bg-white">
+            <DrawerContent className="bg-custom-9 font-syne text-custom-8 rounded-t-lg">
                 <div className="mx-auto w-full pl-20 pr-20 justify-center items-center">
                 <DrawerHeader>
-                    <DrawerTitle>Create a Package</DrawerTitle>
+                    <DrawerTitle className="font-semibold text-3xl">Create a Package</DrawerTitle>
                     <DrawerDescription>Fill all the neccessary fields for users to see.</DrawerDescription>
                 </DrawerHeader>
                     <div className="p-4 pb-0">
@@ -115,7 +115,7 @@ const AddPackage: React.FC<NewPackageProps>  = ({ addPackage }) => {
                                                     <FormItem>
                                                         <FormLabel>Package Title</FormLabel>
                                                         <FormControl>
-                                                            <Input placeholder="Title" {...field} className="max-w-sm"/>
+                                                            <Input placeholder="Title" {...field} className="max-w-sm bg-white"/>
                                                         </FormControl>
                                                         <FormDescription>
                                                             Short and Sweet.
@@ -134,7 +134,7 @@ const AddPackage: React.FC<NewPackageProps>  = ({ addPackage }) => {
                                                     <FormItem>
                                                         <FormLabel>Max Capacity</FormLabel>
                                                         <FormControl>
-                                                            <Input placeholder="Max Number of Guests per Price" {...field} className="max-w-sm"/>
+                                                            <Input placeholder="Max Number of Guests per Price" {...field} className="max-w-sm bg-white"/>
                                                         </FormControl>
                                                         <FormDescription>
                                                             e.g. 5, 10, 20+, unlimited...
@@ -153,7 +153,7 @@ const AddPackage: React.FC<NewPackageProps>  = ({ addPackage }) => {
                                                     <FormItem>
                                                         <FormLabel>Price</FormLabel>
                                                         <FormControl>
-                                                            <Input placeholder="Cost of Package" {...field} className="max-w-sm"/>
+                                                            <Input placeholder="Cost of Package" {...field} className="max-w-sm bg-white"/>
                                                         </FormControl>
                                                         <FormDescription>
                                                             Input a number.
@@ -171,7 +171,7 @@ const AddPackage: React.FC<NewPackageProps>  = ({ addPackage }) => {
                                                     <FormItem>
                                                         <FormLabel>Per</FormLabel>
                                                         <FormControl>
-                                                            <Input placeholder="Price per..." {...field} className="max-w-sm"/>
+                                                            <Input placeholder="Price per..." {...field} className="max-w-sm bg-white"/>
                                                         </FormControl>
                                                         <FormDescription>
                                                             e.g. total, person, kayake, lesson...
@@ -181,7 +181,7 @@ const AddPackage: React.FC<NewPackageProps>  = ({ addPackage }) => {
                                                 )}
                                             />
                                         </div>
-                                        <div className="flex items-center rounded-md border p-3 w-60">
+                                        <div className="flex items-center rounded-md border p-3 w-60 bg-white">
                                             <div className="flex-1">
                                                 <p className="text-sm font-medium leading-none">
                                                 Status
@@ -205,7 +205,7 @@ const AddPackage: React.FC<NewPackageProps>  = ({ addPackage }) => {
                                                     <FormItem>
                                                         <FormLabel>What you'll do</FormLabel>
                                                         <FormControl>
-                                                            <Textarea placeholder="" {...field}/>
+                                                            <Textarea placeholder="" {...field} className='bg-white'/>
                                                         </FormControl>
                                                         <FormDescription>
                                                             Describe the experience.
@@ -223,7 +223,7 @@ const AddPackage: React.FC<NewPackageProps>  = ({ addPackage }) => {
                                                     <FormItem className="flex-1">
                                                         <FormLabel>How long will it be</FormLabel>
                                                         <FormControl>
-                                                            <Textarea placeholder="" {...field} className="w-full"/>
+                                                            <Textarea placeholder="" {...field} className="w-full bg-white"/>
                                                         </FormControl>
                                                         <FormDescription>
                                                             e.g. 45 minutes for ..., and 1 hr for ...
@@ -240,7 +240,7 @@ const AddPackage: React.FC<NewPackageProps>  = ({ addPackage }) => {
                                                     <FormItem>
                                                         <FormLabel>Total time</FormLabel>
                                                         <FormControl>
-                                                            <Input type="number" placeholder="0.5, 1, 2.5 hrs" {...field} className="w-36"
+                                                            <Input type="number" placeholder="0.5, 1, 2.5 hrs" {...field} className="w-36 bg-white"
                                                                 onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
                                                             />
                                                         </FormControl>
@@ -262,7 +262,7 @@ const AddPackage: React.FC<NewPackageProps>  = ({ addPackage }) => {
                                                             <FormItem>
                                                                 <FormLabel>What is included</FormLabel>
                                                                 <FormControl>
-                                                                    <Textarea placeholder="" {...field}/>
+                                                                    <Textarea placeholder="" {...field} className='bg-white'/>
                                                                 </FormControl>
                                                                 <FormDescription>
                                                                     e.g. drinks, food, etc...
@@ -280,7 +280,7 @@ const AddPackage: React.FC<NewPackageProps>  = ({ addPackage }) => {
                                                             <FormItem>
                                                                 <FormLabel>What to bring</FormLabel>
                                                                 <FormControl>
-                                                                    <Textarea placeholder="" {...field}/>
+                                                                    <Textarea placeholder="" {...field} className='bg-white'/>
                                                                 </FormControl>
                                                                 <FormDescription>
                                                                     e.g. sunscreen, driver's license, snacks, water
@@ -299,7 +299,7 @@ const AddPackage: React.FC<NewPackageProps>  = ({ addPackage }) => {
                                 </div>
                                 <DrawerFooter className="w-1/2 mx-auto flex flex-col gap-2">
                                     <DrawerClose asChild>
-                                        <Button type="submit" disabled={isSubmitting}>{isSubmitting ? "Submitting..." : "Submit"}</Button>
+                                        <Button type="submit" className='bg-white' disabled={isSubmitting}>{isSubmitting ? "Submitting..." : "Submit"}</Button>
                                         {/* <Button variant="outline">Cancel</Button> */}
                                     </DrawerClose>
                                     <p className="text-red-600">{createPackageError}</p>

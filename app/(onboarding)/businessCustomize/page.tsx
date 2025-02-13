@@ -137,15 +137,13 @@ const businessOnboarding = () => {
   }
 
   return (
-    <section className="p-10 h-full flex flex-col justify-center bg-grey-50">
-      <div className="mb-5">
+    <section className="p-10 h-full flex flex-col justify-center font-syne text-custom-8 bg-custom-9 ">
+      <div className="mb-5 font-extrabold gap-6 flex">
           <h1 className="text-36 font-bold text-black">My Business Page</h1>
-      </div>
-      <div className="flex absolute top-12 right-12">
-        <Button onClick={navigateToHome} className="p-4 bg-blue-400 text-white rounded-md hover:bg-blue-500 text-lg"> Save </Button>
+          <Button onClick={navigateToHome} className="p-6 bg-custom-6 rounded-md text-white hover:bg-custom-1 hover:text-custom-8 text-3xl"> Save </Button>
       </div>
       <div className="flex">
-        <div className="flex-col rounded-xl border p-10 shadow w-4/6">
+        <div className="flex-col rounded-xl border p-10 shadow w-4/6 bg-white">
 
           {showCompanyName && (
             <div className="flex gap-5 justify-center items-center">
@@ -383,7 +381,7 @@ const businessOnboarding = () => {
             <div>
               <div className="p-5">
                 <DataTableDemo packages={tableData} onSelectPackage={setSelectedPackage}/>
-                <div className="pt-4">
+                <div className="pt-4 rounded-t-lg">
                   <AddPackage 
                     addPackage={(newPackage: Package) =>
                       setTableData((prev) => [...prev, newPackage])

@@ -29,7 +29,7 @@ export function AddPackageCarousel({ photos, onPhotoUpload }: AddPackageCarousel
             <CarouselContent>
             {Array.from({ length: 3 }).map((_, index) => (
                 <CarouselItem key={index}>
-                <Card>
+                <Card className='bg-white'>
                     <CardContent className="relative w-[300px] h-[300px] flex items-center justify-center overflow-hidden">
                     {/* If photo exists, display it */}
                     {photos[index] ? (

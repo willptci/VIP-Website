@@ -8,12 +8,14 @@ interface TableDropDownProps {
 }
 
 const TableDropDown: React.FC<TableDropDownProps> = ({ packageData }) => {
+
+    console.log("photos:", packageData.photos);
     
     return (
         <div className="p-5 border rounded-lg shadow-md bg-white">
             <h2 className="text-xl font-semibold text-gray-800 mb-3">Package Details</h2>
-            <div className="flex gap-4">
-                <div className="space-y-3 flex-col">
+            <div className={`flex ${packageData.photos?.length > 0 ? "justify-between items-center" : "justify-start"}`}>
+                <div className="space-y-5 flex-1">
                     {/* What you'll do */}
                     <div>
                         <p className="text-lg font-medium text-gray-700">What you'll do:</p>
@@ -38,7 +40,7 @@ const TableDropDown: React.FC<TableDropDownProps> = ({ packageData }) => {
                         <p className="text-gray-600">{packageData.bring || "No recommendations provided."}</p>
                     </div>
                 </div>
-                <div>
+                <div className="flex p-10 ml-6">
                     <PhotoCarousel photos={packageData.photos}/>
                 </div>
             </div>

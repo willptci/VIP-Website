@@ -126,7 +126,7 @@ export function DataTableDemo({ packages, onSelectPackage }: { packages: Package
   });
 
   return (
-    <div className="w-full">
+    <div className="w-full text-custom-8 font-syne">
       <div className="rounded-md border">
         <Table>
           <TableHeader>

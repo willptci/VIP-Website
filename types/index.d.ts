@@ -24,6 +24,9 @@ declare interface getUserInfoProps {
 declare type SignUpParams = {
   email: string;
   password: string;
+  firstName: string;
+  lastName: string;
+  role: "user" | "business";
 };
 
 declare type SignInProps = {
@@ -44,7 +47,7 @@ declare type User = {
   lastName: string;
   telephone?: string;
   description?: string;
-  profilePhoto: string;
+  profileImageUrl?: string;
   isVerified: boolean;
 };
 
@@ -141,4 +144,42 @@ export interface SettingsData {
 
 export interface ShowcasingBusinessData extends BusinessData {
   settings: SettingsData;
+}
+
+export interface booking {
+  id: string;
+  businessId: string;
+  customerId: string;
+  packageId?: string;
+  date: string;
+  time: string;
+  timestamp: Timestamp;
+  numberOfAdults: number;
+  numberOfChildren: number;
+  numberOfInfants: number;
+  totalCost: number;
+  status: 'upcoming' | 'completed' | 'canceled';
+  notes?: string;
+  createdAt: Timestamp;
+  // updatedAt: Timestamp;
+  paymentStatus?: 'paid' | 'pending' | 'failed';
+  durationMinutes?: number;
+  location?: string;
+  assignedStaffId?: string;
+}
+
+export interface BusinessAvailability {
+  businessId: string;
+  day: "monday" | "tuesday" | "wednesday" | "thursday" | "friday" | "saturday" | "sunday";
+  openTime: string;
+  closeTime: string;
+  isClosed: boolean;
+}
+
+export interface BusinessTimeSlot {
+  businessId: string;
+  date: string;
+  startTime: string;
+  endTime: string;
+  isBooked: boolean;
 }

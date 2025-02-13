@@ -1,81 +1,67 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import Link from "next/link"
-import { cn } from "@/lib/utils"
-import {
-  NavigationMenu,
-  NavigationMenuContent,
-  NavigationMenuItem,
-  NavigationMenuLink,
-  NavigationMenuList,
-  NavigationMenuTrigger,
-  navigationMenuTriggerStyle,
-} from "@/components/ui/navigation-menu"
+import * as React from "react";
+import Link from "next/link";
 import { useAuthStore } from "@/state/authState";
+import Andros_Logo from "@/public/icons/bonefish.svg";
+import Image from "next/image";
+import { usePathname } from "next/navigation"; // Import to check route
 
 const ProfileNav: React.FC = () => {
-  const role = useAuthStore((state) => state.role)
-  return (
-    <div className="pl-5 pt-3 pb-3 bg-blue-400">
-    <NavigationMenu>
-      <NavigationMenuList className="flex items-center justify-between">
-          <div>
-            <NavigationMenuItem>
-              <Link href="/" legacyBehavior passHref>
-                <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                  Home
-                </NavigationMenuLink>
-              </Link>
-            </NavigationMenuItem>
-          </div>
-          <div className="nav-to-end">
-            <NavigationMenuItem>
-              <Link href="/about" legacyBehavior passHref>
-                <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                  About
-                </NavigationMenuLink>
-              </Link>
-            </NavigationMenuItem>
-            <NavigationMenuItem>
-              <Link href="/profile" legacyBehavior passHref>
-                <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                  {role === "business" ? "My Business" : "Profile"}
-                </NavigationMenuLink>
-              </Link>
-            </NavigationMenuItem>
-          </div>
-      </NavigationMenuList>
-    </NavigationMenu>
-    </div>
-  )
-}
+  const role = useAuthStore((state) => state.role);
+  const pathname = usePathname(); // Get current page route
 
-const ListItem = React.forwardRef<
-  React.ElementRef<"a">,
-  React.ComponentPropsWithoutRef<"a">
->(({ className, title, children, ...props }, ref) => {
+  // Apply sticky only if NOT on the home page
+  const navbarClasses = pathname === "/" 
+    ? "bg-white" // Normal navbar on home
+    : "sticky top-0 z-50 bg-white shadow-sm"; // Sticky on other pages
+
   return (
-    <li>
-      <NavigationMenuLink asChild>
-        <a
-          ref={ref}
-          className={cn(
-            "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
-            className
+    <div className={navbarClasses}>
+      {/* Navigation Bar Container */}
+      <div className="flex items-center justify-between w-full px-5 py-2">
+        {/* Logo Section */}
+        <div className="flex items-center">
+          <Link href="/" passHref>
+            <div className="flex items-center pl-8 cursor-pointer">
+              <div className="relative w-[70px] h-[70px]">
+                <Image
+                  src={Andros_Logo}
+                  alt="Logo"
+                  width={70}
+                  height={70}
+                  className="object-contain"
+                />
+              </div>
+              <h1 className="font-bold font-syne text-custom-8 text-4xl">Andros</h1>
+            </div>
+          </Link>
+        </div>
+
+        {/* Navigation Links Section */}
+        <div className="ml-auto flex items-center space-x-8 font-syne text-2xl text-custom-8 pr-10">
+          <Link href="/about" passHref>
+            <div className="cursor-pointer hover:text-accent transition-colors">
+              Us
+            </div>
+          </Link>
+          {role === "guest" ? (
+            <Link href="/sign-in" passHref>
+              <div className="cursor-pointer hover:text-accent transition-colors">
+                Sign In
+              </div>
+            </Link>
+          ) : (
+            <Link href="/profile" passHref>
+              <div className="cursor-pointer hover:text-accent transition-colors">
+                {role === "business" ? "My Business" : "Profile"}
+              </div>
+            </Link>
           )}
-          {...props}
-        >
-          <div className="text-sm font-medium leading-none">{title}</div>
-          <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
-            {children}
-          </p>
-        </a>
-      </NavigationMenuLink>
-    </li>
-  )
-})
-ListItem.displayName = "ListItem"
+        </div>
+      </div>
+    </div>
+  );
+};
 
-export default ProfileNav
-
+export default ProfileNav;

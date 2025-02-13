@@ -66,15 +66,15 @@ const BusinessSetUp = () => {
     };
 
   return (
-    <section className="p-10 w-full h-full flex flex-col justify-center bg-grey-50">
+    <section className="p-6 pl-10 w-full h-screen flex flex-col justify-center font-syne text-custom-8 bg-custom-9 overflow-hidden">
         <div className="mb-5">
-          <h1 className="text-36 font-bold text-black">Set Up Your Business</h1>
+          <h1 className="text-5xl font-bold">Set Up Your Business</h1>
         </div>
         <div className="flex">
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-2 w-full">
                     <p className="header-2 mt-8">Owner</p>
-                    <div className="flex gap-12 p-4 w-full">
+                    <div className="flex gap-20 p-4 w-full">
                         <div className="flex gap-4">
                             <FormField
                                 control={form.control}
@@ -83,7 +83,7 @@ const BusinessSetUp = () => {
                                     <FormItem>
                                         <FormLabel>First</FormLabel>
                                         <FormControl>
-                                            <Input placeholder="first" {...field} className="max-w-sm"/>
+                                            <Input placeholder="first" {...field} className="max-w-sm bg-white"/>
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
@@ -96,7 +96,7 @@ const BusinessSetUp = () => {
                                     <FormItem>
                                         <FormLabel>Last</FormLabel>
                                         <FormControl>
-                                            <Input placeholder="last" {...field} className="max-w-sm"/>
+                                            <Input placeholder="last" {...field} className="max-w-sm bg-white"/>
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
@@ -110,14 +110,13 @@ const BusinessSetUp = () => {
                                 <FormItem>
                                     <FormLabel>Company Name</FormLabel>
                                     <FormControl>
-                                        <Input placeholder="company" {...field} className="min-w-52"/>
+                                        <Input placeholder="company" {...field} className="min-w-52 bg-white"/>
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
                             )}
                         />
-                    </div>
-                    <div className="p-4">
+
                         <FormField
                             control={form.control}
                             name="phoneNumber"
@@ -125,14 +124,13 @@ const BusinessSetUp = () => {
                                 <FormItem>
                                     <FormLabel>Company Phone Number</FormLabel>
                                     <FormControl>
-                                        <Input placeholder="1-242-***-****" {...field} className="max-w-52"/>
+                                        <Input placeholder="1-242-***-****" {...field} className="max-w-52 bg-white"/>
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
                             )}
                         />
-                    </div>
-                    <div className="p-4">
+
                         <FormField
                             control={form.control}
                             name="businessEmail"
@@ -140,7 +138,7 @@ const BusinessSetUp = () => {
                                 <FormItem>
                                     <FormLabel>Company Email</FormLabel>
                                     <FormControl>
-                                        <Input placeholder="business@gmail.com" {...field} className="max-w-52"/>
+                                        <Input placeholder="business@gmail.com" {...field} className="max-w-52 bg-white"/>
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
@@ -162,7 +160,7 @@ const BusinessSetUp = () => {
                                         <textarea
                                             placeholder="What would you like users to know about yourself?"
                                             {...field}
-                                            className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                                            className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring bg-white"
                                             rows={4}
                                         />
                                     </FormControl>
@@ -186,7 +184,7 @@ const BusinessSetUp = () => {
                                         <textarea
                                             placeholder="What would you like users to know about yourself?"
                                             {...field}
-                                            className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                                            className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring bg-white"
                                             rows={4}
                                         />
                                     </FormControl>
@@ -198,7 +196,7 @@ const BusinessSetUp = () => {
                             )}
                         />
                     </div>
-                    <Button type="submit" disabled={isSubmitting}>{isSubmitting ? "Submitting..." : "Submit"}</Button>
+                    <Button type="submit" disabled={isSubmitting} className='bg-white'>{isSubmitting ? "Submitting..." : "Submit"}</Button>
                     <p className="text-red-600">{createBusinessError}</p>
                 </form>
             </Form>

@@ -31,7 +31,7 @@ const CustomizeCard: React.FC<CustomizeCardProps> = ({ switches }) => {
     setShowBackground,
   } = switches;
   return (
-    <Card>
+    <Card className="bg-white">
       <CardHeader>
         <CardTitle>Customize</CardTitle>
         <CardDescription>Which fields do you want to show on your page?</CardDescription>

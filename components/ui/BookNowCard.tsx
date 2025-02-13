@@ -67,7 +67,7 @@ export function BookNowCard({
         : 0;
 
     return (
-        <Card className="w-[350px]">
+        <Card className="w-[350px] font-syne text-custom-8">
         <CardHeader>
             <CardTitle className="text-4xl font-semibold">Book Now</CardTitle>
             <CardDescription className="text-lg">
