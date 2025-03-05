@@ -12,19 +12,33 @@ import { Package } from "@/types";
 import { Textarea } from "@/components/ui/textarea";
 import AddPackage from "@/components/ui/AddPackage";
 
-const businessOnboarding = () => {
+const BusinessOnboarding = () => {
   const [showCompanyName, setShowCompanyName] = useState(true);
   const [showCompanyDescription, setShowCompanyDescription] = useState(true);
   const [showWhoYouAre, setShowWhoYouAre] = useState(true);
   const [showContact, setShowContact] = useState(true);
   const [showBackground, setShowBackground] = useState(true);
 
-  const [selectedPackage, setSelectedPackage] = React.useState<Package | null>(
-    null
-  );
+  // const [selectedPackage, setSelectedPackage] = React.useState<Package | null>(
+  //   null
+  // );
+  const setSelectedPackage = React.useState<Package | null>()[1]; // Keep only the setter
 
   const router = useRouter();
-  const [businessData, setBusinessData] = useState<any>(null);
+  interface BusinessData {
+    companyName?: string;
+    firstName?: string;
+    lastName?: string;
+    phoneNumber?: string;
+    companyDescription?: string;
+    ownerDescription?: string;
+    photos?: string[];
+    backgroundImage?: string;
+  }
+  
+  const [businessData, setBusinessData] = useState<BusinessData>({} as BusinessData);
+  
+  console.log(businessData)
   const [isEditing, setIsEditing] = useState({
     companyName: false,
     companyDescription: false,
@@ -68,7 +82,7 @@ const businessOnboarding = () => {
 
   const handleUpdateField = async (field: string, value: string) => {
     try {
-      setBusinessData((prev: any) => ({
+      setBusinessData((prev: BusinessData) => ({
         ...prev,
         [field]: value,
       }));
@@ -100,7 +114,7 @@ const businessOnboarding = () => {
       if (file && authId) {
         try {
           const photoUrl = await uploadPhotoForBusiness(file, authId);
-          setBusinessData((prev: any) => {
+          setBusinessData((prev: BusinessData) => {
             const updatedPhotos = [...(prev.photos || [])];
             updatedPhotos[index] = photoUrl; // Replace or add the photo
             return { ...prev, photos: updatedPhotos };
@@ -352,7 +366,7 @@ const businessOnboarding = () => {
             </div>
           )}
 
-          {showBackground && (
+          {showBackground && businessData?.photos?.[2] && (
             <section
               className="h-[60vh] bg-fixed bg-cover bg-center flex items-center justify-center"
               style={{
@@ -420,4 +434,4 @@ const businessOnboarding = () => {
   );
 }
 
-export default businessOnboarding
+export default BusinessOnboarding

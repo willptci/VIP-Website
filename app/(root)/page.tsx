@@ -14,15 +14,23 @@ import {
 
 const ITEMS_PER_PAGE = 8; // Adjust as needed
 
+interface HomeBusiness {
+  $id: string;
+  companyName?: string;
+  firstName?: string;
+  lastName?: string;
+  photos?: string[];
+}
+
 const Home = () => {
-  const [companies, setCompanies] = useState<any[]>([]);
-  const [filteredCompanies, setFilteredCompanies] = useState<any[]>([]);
+  const [companies, setCompanies] = useState<HomeBusiness[]>([]);
+  const [filteredCompanies, setFilteredCompanies] = useState<HomeBusiness[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
 
-  const isValidImage = (image: string) =>
-    image && (image.startsWith("/") || image.startsWith("http"));
+  const isValidImage = (image?: string) =>
+    !!image && (image.startsWith("/") || image.startsWith("http"));
 
   useEffect(() => {
     const loadCompanies = async () => {
@@ -80,11 +88,7 @@ const Home = () => {
               businessName={company.companyName || "Unknown Business"}
               firstName={company.firstName || "Unknown"}
               lastName={company.lastName || "Unknown"}
-              image={
-                isValidImage(company.photos?.[0])
-                  ? company.photos[0]
-                  : "/default-image.jpg"
-              }
+              image={isValidImage(company.photos?.[0]) ? company.photos![0] : "/default-image.jpg"}
             />
           ))
         ) : (

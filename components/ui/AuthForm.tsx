@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import React, { useState } from 'react'
 import Link from 'next/link'
@@ -31,7 +32,6 @@ const AuthForm = ({ type } : { type : string}) => {
         setIsChecked(checked === true);
         form.setValue('role', checked === true ? 'business' : 'user');
     };
-
     const formSchema = authFormSchema(type);
 
     const form = useForm<z.infer<typeof formSchema>>({
@@ -131,7 +131,11 @@ const AuthForm = ({ type } : { type : string}) => {
                 <>
                 {type === 'sign-up' && (
                 <div className="flex items-center space-x-2 mt-5 mb-5">
-                        <Checkbox id="terms" onCheckedChange={handleCheckboxChange} />
+                        <Checkbox
+                            id="terms"
+                            checked={isChecked}
+                            onCheckedChange={handleCheckboxChange}
+                        />
                         <label
                             htmlFor="terms"
                             className="text-xl font-syne text-custom-8 font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"

@@ -35,10 +35,10 @@ type FixedSlots = {
   blockedSlots: FixedSlot[];
 };
 
-type Schedule = {
-  openHours: OpenHours | null;
-  fixedSlots: FixedSlots | null;
-};
+// type Schedule = {
+//   openHours: OpenHours | null;
+//   fixedSlots: FixedSlots | null;
+// };
 
 type BookingsByDate = Record<string, Booking[]>;
 
@@ -49,7 +49,7 @@ const SchedulePage = () => {
     fixedSlots: [],
   });
   const [bookings, setBookings] = useState<BookingsByDate>({});
-  const [loading, setLoading] = useState(true);
+  // const [loading, setLoading] = useState(true);
 
   // useEffect(() => {
   //   const loadScheduleAndBookings = async () => {
@@ -112,7 +112,7 @@ const SchedulePage = () => {
       } catch (error) {
         console.error("Error loading schedule or bookings:", error);
       } finally {
-        setLoading(false);
+        // setLoading(false);
       }
     };
   

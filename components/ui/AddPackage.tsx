@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from 'react'
 import { NewPackageProps, Package } from '@/types';
 import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from './drawer';
@@ -7,7 +8,7 @@ import { packageFormSchema } from '@/lib/utils';
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
-import { addPackageToFirestore, uploadPhotoForBusiness, uploadPhotoForPackage } from '@/lib/actions/business.actions';
+import { addPackageToFirestore, uploadPhotoForPackage } from '@/lib/actions/business.actions';
 import {
     Form,
     FormControl,
@@ -203,7 +204,7 @@ const AddPackage: React.FC<NewPackageProps>  = ({ addPackage }) => {
                                                 name="what"
                                                 render={({ field }) => (
                                                     <FormItem>
-                                                        <FormLabel>What you'll do</FormLabel>
+                                                        <FormLabel>What you&apos;ll do</FormLabel>
                                                         <FormControl>
                                                             <Textarea placeholder="" {...field} className='bg-white'/>
                                                         </FormControl>
@@ -283,7 +284,7 @@ const AddPackage: React.FC<NewPackageProps>  = ({ addPackage }) => {
                                                                     <Textarea placeholder="" {...field} className='bg-white'/>
                                                                 </FormControl>
                                                                 <FormDescription>
-                                                                    e.g. sunscreen, driver's license, snacks, water
+                                                                    e.g. sunscreen, driver&apos;s license, snacks, water
                                                                 </FormDescription>
                                                                 <FormMessage />
                                                             </FormItem>

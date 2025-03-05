@@ -1,5 +1,5 @@
 "use client"
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
@@ -58,9 +58,14 @@ const BusinessSetUp = () => {
             router.push("/businessCustomize");
 
             setIsSubmitting(false);
-        } catch (error: any) {
-            setCreateBusinessError(error.message || "An error occurred");
-            console.error("Failed to create business:", error);
+        } catch (error: unknown) {
+            if (error instanceof Error) {
+                setCreateBusinessError(error.message);
+                console.error("Failed to create business:", error.message);
+            } else {
+                setCreateBusinessError("An unknown error occurred");
+                console.error("Failed to create business:", error);
+            }
             setIsSubmitting(false);
         }
     };

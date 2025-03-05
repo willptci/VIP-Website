@@ -1,6 +1,5 @@
 "use client";
 
-import BusinessProfilePage from "@/components/ui/BusinessProfilePage";
 import UserProfilePage from "@/components/ui/UserProfilePage";
 import SignInPrompt from "@/components/ui/SignInPrompt";
 import { useAuthStore } from "@/state/authState";

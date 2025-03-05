@@ -1,29 +1,43 @@
 "use client";
 
 import { DataTableDemo } from "@/components/ui/PackageTable";
-import { PhotoCarousel } from "@/components/ui/ShowcasePhotoCarousel";
 import Image from "next/image";
 import { Package } from "@/types";
 import { BookNowCard } from "../ui/BookNowCard";
 import React from "react";
 import TopReviewsCarousel from "../ui/ShowReviews";
 
+interface BusinessData {
+  settings?: {
+    showCompanyName?: boolean;
+    showCompanyDescription?: boolean;
+    showWhoYouAre?: boolean;
+    showContact?: boolean;
+    showBackground?: boolean;
+  };
+  companyName?: string;
+  firstName?: string;
+  lastName?: string;
+  phoneNumber?: string;
+  companyDescription?: string;
+  ownerDescription?: string;
+  photos?: string[];
+}
+
 interface BusinessPageClientProps {
-  businessData: any;
+  businessData: BusinessData;
   packages: Package[];
   businessId: string;
 }
 
 export default function BusinessPageClient({
-  businessData = {},
+  businessData = {} as BusinessData,
   packages = [],
   businessId = "",
 }: BusinessPageClientProps) {
   const [selectedPackage, setSelectedPackage] = React.useState<Package | null>(
     null
   );
-
-  console.log(businessData)
   
   // Placeholder for missing images
   const getImage = (index: number, defaultSrc: string) =>
