@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Slider } from "@/components/ui/slider";
 import { Plus } from "lucide-react";
+import { SliderWithNumberProps } from "@/types";
 
 export default function SliderWithNumber({
   value,
