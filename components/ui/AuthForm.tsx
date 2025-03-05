@@ -62,6 +62,8 @@ const AuthForm = ({ type } : { type : string}) => {
 
             // Local state (if I still need it for UI?)
             setUser({ email: newUser.email });
+
+            // router.push(role === "business" ? "/businessSetUp" : "/profile");
           }
     
           if (type === "sign-in") {
@@ -110,9 +112,9 @@ const AuthForm = ({ type } : { type : string}) => {
                     </p>
                 </div>
             </header>
-            {user ? (
+            {(user && type === 'sign-up') ? (
                 <div className="flex flex-col gap-4">
-                    <Button type="button" disabled={isLoading} className="to-home relative" onClick={() => !isLoading && (role === "business" ? router.push('/businessSetUp') : router.push('/userSetUp'))}>
+                    <Button type="button" disabled={isLoading} className="to-home relative" onClick={() => !isLoading && (role === "business" ? router.push('/businessSetUp') : router.push('/profile'))}>
                                 {isLoading ? (
                                     <>
                                         <Loader2 size={20} className="animate-spin" /> &nbsp; Loading...
