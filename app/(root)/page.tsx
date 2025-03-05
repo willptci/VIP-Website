@@ -1,27 +1,35 @@
-"use client"
-import React, { useEffect, useState } from 'react';
-import CompanyProfileBox from '@/components/ui/CompanyProfileBox';
-import bonefishing_1 from '/public/companyExamples/Andros-1.jpg';
-import bonefishing_2 from '/public/companyExamples/Andros-2.jpg';
-import bonefishing_3 from '/public/companyExamples/Andros-3.jpg';
-import bonefishing_4 from '/public/companyExamples/Andros-4.jpg';
-import bonefishing_5 from '/public/companyExamples/Andros-5.jpg';
-import bonefishing_6 from '/public/companyExamples/Andros-6.jpg';
-import bonefishing_7 from '/public/companyExamples/Andros-7.jpg';
-import { createAdminClient } from '@/lib/appwrite';
-import { fetchCompanies } from '@/lib/actions/user.actions';
+"use client";
+import { useState, useEffect } from "react";
+import { fetchCompanies } from "@/lib/actions/business.actions";
+import CompanyProfileBox from "@/components/ui/CompanyProfileBox";
+import { Input } from "@/components/ui/input";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
+
+const ITEMS_PER_PAGE = 8; // Adjust as needed
 
 const Home = () => {
-  const [companies, setCompanies] = useState<CompanyDocument[]>([]);
+  const [companies, setCompanies] = useState<any[]>([]);
+  const [filteredCompanies, setFilteredCompanies] = useState<any[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
-  const isValidImage = (image: string) => image && (image.startsWith("/") || image.startsWith("http"));
+
+  const isValidImage = (image: string) =>
+    image && (image.startsWith("/") || image.startsWith("http"));
 
   useEffect(() => {
     const loadCompanies = async () => {
       try {
         const companyData = await fetchCompanies();
         setCompanies(companyData);
-        console.log("company image", companies[0].image);
+        setFilteredCompanies(companyData); // Initialize with all companies
       } catch (error) {
         console.error("Error loading companies:", error);
       } finally {
@@ -32,40 +40,92 @@ const Home = () => {
     loadCompanies();
   }, []);
 
+  // Handle search filtering
+  useEffect(() => {
+    const filtered = companies.filter((company) =>
+      company.companyName?.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+    setFilteredCompanies(filtered);
+    setCurrentPage(1); // Reset pagination when filtering
+  }, [searchQuery, companies]);
+
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredCompanies.length / ITEMS_PER_PAGE);
+  const paginatedCompanies = filteredCompanies.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
+
   if (loading) return <p>Loading...</p>;
 
   return (
-    <section className="home">
-      <div className="home-companies">
-        {/* Static CompanyProfileBox items */}
-        <CompanyProfileBox
-          category="Fishing"
-          businessProduct="Fishing Day Trips"
-          businessName="Melly's Adventures"
-          firstName='Jonathon'
-          lastName='Cox'
-          image={bonefishing_1.src}
-        />
-        <CompanyProfileBox category="Fishing" businessProduct="Fishing Day Trips" businessName="Ocean Tours" firstName="Shawn" lastName="Gardiner" image={bonefishing_2.src} />
-        <CompanyProfileBox category="Fishing" businessProduct="Fishing Day Trips" businessName="Ocean Odyssey" firstName="Daunte" lastName="Taylor"  image={bonefishing_3.src} />
-        <CompanyProfileBox category="Fishing" businessProduct="Fishing Day Trips" businessName="Bonefish Bonanza" firstName="Brenten" lastName="Handfield"  image={bonefishing_4.src} />
-        <CompanyProfileBox category="Fishing" businessProduct="Fishing Day Trips" businessName="Andros Excursions" firstName="Donny" lastName="Williams"  image={bonefishing_5.src} />
-        <CompanyProfileBox category="Fishing" businessProduct="Fishing Day Trips" businessName="Bait & Tackle Tours" firstName="Will" lastName="Parrish"  image={bonefishing_6.src} />
-        <CompanyProfileBox category="Fishing" businessProduct="Fishing Day Trips" businessName="Waterway Wonders Fishing" firstName="Marley" lastName="Hess"  image={bonefishing_7.src} />
+    <section className="flex flex-col items-center py-10 px-4">
+      {/* Search Bar */}
+      <Input
+        type="text"
+        placeholder="Search businesses..."
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+        className="w-full max-w-lg p-2 mb-6 border border-gray-300 rounded-md"
+      />
 
-        {/* Dynamically rendered CompanyProfileBox items with only businessName dynamically set */}
-        {companies.map((company) => (
-          <CompanyProfileBox
-            key={company.$id}
-            category="Fishing" // Default value
-            businessProduct="Fishing Day Trips" // Default value
-            businessName={company.companyName} // Dynamic value
-            firstName={company.firstName}
-            lastName={company.lastName}
-            image={isValidImage(company.image) ? company.image : bonefishing_1.src} // Default image
-          />
-        ))}
+      {/* Company Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 max-w-screen-xl w-full">
+        {paginatedCompanies.length > 0 ? (
+          paginatedCompanies.map((company) => (
+            <CompanyProfileBox
+              key={company.$id}
+              businessId={company.$id}
+              businessProduct="Fishing Day Trips"
+              businessName={company.companyName || "Unknown Business"}
+              firstName={company.firstName || "Unknown"}
+              lastName={company.lastName || "Unknown"}
+              image={
+                isValidImage(company.photos?.[0])
+                  ? company.photos[0]
+                  : "/default-image.jpg"
+              }
+            />
+          ))
+        ) : (
+          <p className="text-center col-span-full">No businesses found.</p>
+        )}
       </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <Pagination className="mt-8">
+          <PaginationContent>
+            <PaginationItem>
+              <PaginationPrevious
+                href="#"
+                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
+              />
+            </PaginationItem>
+
+            {[...Array(totalPages)].map((_, i) => (
+              <PaginationItem key={i}>
+                <PaginationLink
+                  href="#"
+                  onClick={() => setCurrentPage(i + 1)}
+                  isActive={currentPage === i + 1}
+                >
+                  {i + 1}
+                </PaginationLink>
+              </PaginationItem>
+            ))}
+
+            <PaginationItem>
+              <PaginationNext
+                href="#"
+                onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}
+              />
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
+      )}
     </section>
   );
 };

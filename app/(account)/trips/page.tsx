@@ -1,30 +1,40 @@
-import React from 'react'
-import './Purchases.scss';
+"use client";
+import PrevBookingsList from '@/components/ui/PrevBookingsList';
+import { Button } from '@/components/ui/button';
+import PrevTripsList from '@/components/ui/PrevTripsList';
+import { useAuthStore } from '@/state/authState';
+import React, { useState } from 'react'
 
-const purchasesData = [
-  { id: 1, name: 'Boat Rides', price: 699, date: '2024-10-15', status: 'Done' },
-  { id: 2, name: 'Fishing Adventure', price: 1299, date: '2024-09-30', status: 'Done' },
-  { id: 3, name: 'Bahamas Tour', price: 199, date: '2024-08-20', status: 'Happening soon' },
-];
+const PreviousTrips = () => {
+  const role = useAuthStore((state) => state.role);
+  const [view, setView] = useState<"trips" | "bookings">("trips");
 
-const Trips: React.FC = () => {
   return (
-    <div className="purchases">
-      <h1>Purchase History</h1>
-      <div className="purchase-list">
-        {purchasesData.map((purchase) => (
-          <div key={purchase.id} className="purchase-item">
-            <h2>{purchase.name}</h2>
-            <div>
-              <p>Price: ${purchase.price}</p>
-              <p>Date: {purchase.date}</p>
-              <p>Status: {purchase.status}</p>
-            </div>
-          </div>
-        ))}
-      </div>
+    <div className="max-w-3xl mx-auto p-6">
+      <h1 className="text-3xl font-semibold mb-6">
+        Past {view === "trips" ? "Trips" : "Bookings"}
+      </h1>
+
+      {role === "business" ? (
+        <div className="flex gap-4 mb-4">
+          <Button
+            onClick={() => setView("trips")}
+            variant={view === "trips" ? "default" : "outline"}
+          >
+            View Trips
+          </Button>
+          <Button
+            onClick={() => setView("bookings")}
+            variant={view === "bookings" ? "default" : "outline"}
+          >
+            View Bookings
+          </Button>
+        </div>
+      ) : null}
+
+      {view === "trips" || role === "user" ? <PrevTripsList /> : <PrevBookingsList />}
     </div>
   );
 };
 
-export default Trips
+export default PreviousTrips;

@@ -1,7 +1,8 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAnalytics, isSupported } from "firebase/analytics";
-import { getAuth } from "firebase/auth";
+import { getAuth, setPersistence, browserLocalPersistence } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
+import { getStorage } from "firebase/storage";
 
 // Firebase configuration
 const firebaseConfig = {
@@ -16,18 +17,20 @@ const firebaseConfig = {
 
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 
-// let analytics: ReturnType<typeof getAnalytics> | null = null;
+const auth = getAuth(app);
+setPersistence(auth, browserLocalPersistence).catch((error) => {
+  console.error("Failed to set Firebase Auth persistence:", error);
+});
 
+const db = getFirestore(app);
+const storage = getStorage(app);
+
+// Optional: Firebase Analytics (for browser only)
+// let analytics: ReturnType<typeof getAnalytics> | null = null;
 // if (typeof window !== "undefined") {
 //   isSupported().then((supported) => {
-//     if (supported) {
-//       analytics = getAnalytics(app);
-//     }
+//     if (supported) analytics = getAnalytics(app);
 //   });
 // }
 
-const auth = getAuth(app);
-const db = getFirestore(app);
-
-export { app, auth, firebaseConfig, db };
-
+export { app, auth, db, storage };

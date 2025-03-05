@@ -1,9 +1,11 @@
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } from "firebase/auth";
-import { auth, firebaseConfig, db } from "@/firebase/firebaseConfig";
-import { collection, addDoc } from "firebase/firestore";
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, updateProfile } from "firebase/auth";
+import { auth, db, storage } from "@/firebase/firebaseConfig";
+import { collection, addDoc, getDoc, doc, updateDoc, setDoc, arrayUnion } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
+import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
+import { SignInProps, SignUpParams, User } from "@/types";
 
-export const signIn = async ({ email, password }: { email: string; password: string }) => {
+export const signIn = async ({ email, password }: SignInProps) => {
 
   if (typeof window === "undefined") {
     throw new Error("Firebase Auth can only be used client-side.");
@@ -21,10 +23,24 @@ export const signIn = async ({ email, password }: { email: string; password: str
   }
 };
 
-export const signUp = async ({ email, password }: { email: string; password: string }) => {
+export const signUp = async ({ email, password, firstName, lastName, role }: SignUpParams) => {
   try {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
+
+    const userData = {
+      uid: user.uid,
+      role,
+      email,
+      firstName,
+      lastName,
+      telephone: '',
+      description: '',
+      profileImageUrl: '',
+      isVerified: false,
+    };
+
+    await setDoc(doc(db, 'users', user.uid), userData);
 
     console.log("User signed up:", user);
     return user;
@@ -34,272 +50,169 @@ export const signUp = async ({ email, password }: { email: string; password: str
   }
 };
 
+export const updateUserProfile = async (userId: string, profileData: Partial<User>) => {
+  try {
+    const userRef = doc(db, "users", userId);
+    await updateDoc(userRef, profileData);
+  } catch (error) {
+    console.error("Error updating profile:", error);
+    throw error;
+  }
+};
+
+export const getLoggedInUser = async () => {
+  return auth.currentUser;
+};
+
+export const getUserInfo = async (userId: string) => {
+  try {
+    const userDoc = await getDoc(doc(db, 'users', userId));
+
+    if (!userDoc.exists()) {
+      throw new Error('User data not found');
+    }
+
+    return userDoc.data();
+  } catch (error) {
+    console.error('Error fetching user info:', error);
+    throw error;
+  }
+};
+
+export const uploadProfileImage = async (file: File, userId: string) => {
+  try {
+    const storageRef = ref(storage, `profileImages/${userId}`);
+    await uploadBytes(storageRef, file);
+    const downloadUrl = await getDownloadURL(storageRef);
+
+    // Update Firestore with the new profile image URL
+    await updateUserProfile(userId, { profileImageUrl: downloadUrl });
+
+    return downloadUrl;
+  } catch (error) {
+    console.error("Error uploading profile image:", error);
+    throw error;
+  }
+};
+
 export const logout = async () => {
   try {
-    await auth.signOut();
+    await signOut(auth);
     console.log("User signed out successfully.");
   } catch (error) {
     console.error("Error signing out:", error);
+    throw new Error("Failed to sign out. Please try again.");
   }
 };
 
-export const updateUserProfile = async (profileData: { displayName?: string; photoURL?: string }) => {
+export const fetchUserUpcomingTrips = async () => {
+  const auth = getAuth();
   const user = auth.currentUser;
 
-  if (user) {
-    try {
-      await updateProfile(user, profileData);
-      console.log("User profile updated:", user);
-      return user;
-    } catch (error) {
-      console.error("Error updating profile:", error);
-      throw error;
-    }
-  } else {
-    console.warn("No user is currently logged in.");
+  if (!user) throw new Error("User not authenticated.");
+
+  try {
+    const userRef = doc(db, "users", user.uid);
+    const userSnap = await getDoc(userRef);
+
+    if (!userSnap.exists()) return [];
+
+    const userData = userSnap.data();
+    return userData.upcomingTrips
+      ? userData.upcomingTrips.sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime())
+      : [];
+  } catch (error) {
+    console.error("Error fetching upcoming trips:", error);
+    throw error;
   }
 };
 
+export const fetchUserPastTrips = async () => {
+  const auth = getAuth();
+  const user = auth.currentUser;
 
+  if (!user) throw new Error("User not authenticated.");
 
-// export const setCustomClaims = async (uid: string, claims: { business?: boolean }) => {
+  try {
+    const userRef = doc(db, "users", user.uid);
+    const userSnap = await getDoc(userRef);
+
+    if (!userSnap.exists()) return [];
+
+    const userData = userSnap.data();
+    const now = new Date();
+
+    return userData.upcomingTrips
+      ? userData.upcomingTrips
+          .filter((trip: any) => new Date(trip.date).getTime() < now.getTime())
+          .sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime())
+      : [];
+  } catch (error) {
+    console.error("Error fetching past trips:", error);
+    throw error;
+  }
+};
+
+// export const submitReview = async ({ businessId, rating, title, review }: { businessId: string; rating: number; title: string; review: string }) => {
 //   try {
-//     await getAuth().setCustomUserClaims(uid, claims);
-//     console.log("Custom claims set for user:", uid);
+//     const businessRef = doc(db, "businesses", businessId);
+
+//     await updateDoc(businessRef, {
+//       reviews: arrayUnion({
+//         rating,
+//         title,
+//         review,
+//         createdAt: new Date().toISOString(),
+//       }),
+//     });
+
+//     console.log("Review submitted successfully.");
 //   } catch (error) {
-//     console.error("Error setting custom claims:", error);
+//     console.error("Error submitting review:", error);
 //     throw error;
 //   }
 // };
 
-// export async function getLoggedInUser() {
-//     try {
-//       const { account } = await createSessionClient();
-//       const user = await account.get();
-  
-//       //const user = await getUserInfo({ userId: result.$id})
-  
-//       return parseStringify(user);
-//     } catch (error) {
-//       console.log(error)
-//       return null;
-//     }
-//   }
+export const submitReview = async ({ businessId, rating, title, review }: { 
+  businessId: string; 
+  rating: number; 
+  title: string; 
+  review: string; 
+}) => {
+  try {
+    const auth = getAuth();
+    const user = auth.currentUser;
 
-//   export const getUserInfo = async ({ userId }: getUserInfoProps) => {
-//     try {
-//       const { database } = await createAdminClient();
-  
-//       const user = await database.listDocuments(
-//         DATABASE_ID!,
-//         USER_COLLECTION_ID!,
-//         [Query.equal('userId', [userId])]
-//       )
-  
-//       return parseStringify(user.documents[0]);
-//     } catch (error) {
-//       console.log(error)
-//     }
-//   }
+    if (!user) {
+      throw new Error("User must be signed in to submit a review.");
+    }
 
-//   export const updateUserProfile = async (documentId: string, profileData: Partial<User>): Promise<User | null> => {
-//     try {
-//         const { database } = await createAdminClient();
+    const userRef = doc(db, "users", user.uid);
+    const userSnap = await getDoc(userRef);
 
-//         const updatedProfile = await database.updateDocument(
-//             DATABASE_ID!,
-//             USER_COLLECTION_ID!,
-//             documentId,
-//             profileData
-//         );
+    if (!userSnap.exists()) {
+      throw new Error("User profile not found in Firestore.");
+    }
 
-//         console.log("Updated profile data:", updatedProfile);
-//         return parseStringify(updatedProfile) as User;
-//     } catch (error) {
-//         console.error('Error updating user profile:', error);
-//         return null;
-//     }
-// };
+    const { firstName, lastName } = userSnap.data() as { firstName?: string; lastName?: string };
 
-// export const logout = async () => {
-//   const setRole = useAuthStore((state) => state.setRole);
-//   try {
-//       const { account } = await createSessionClient();
-//       cookies().delete('appwrite-sesssion');
-//       await account.deleteSession('current');
-//       setRole("guest");
-//       console.log("User logged out successfully");
-//   } catch (error) {
-//       console.error("Error logging out:", error);
-//   }
-// };
+    const userName = `${firstName || ""} ${lastName || ""}`.trim() || "Anonymous";
 
-// export const uploadProfileImage = async (file: File): Promise<string | null> => {
-//   try {
-//       const { storage } = await createAdminClient();
+    const businessRef = doc(db, "businesses", businessId);
 
-//       const response = await storage.createFile(
-//           PROFILE_STORAGE_BUCKET_ID!,
-//           ID.unique(),
-//           file
-//       );
+    await updateDoc(businessRef, {
+      reviews: arrayUnion({
+        authorName: userName,
+        rating,
+        title,
+        review,
+        createdAt: new Date().toISOString(),
+      }),
+    });
 
-//       console.log("Uploaded image file:", response);
-//       return response.$id;
-//   } catch (error) {
-//       console.error("Error uploading profile image:", error);
-//       return null;
-//   }
-// };
-
-// export const createBusiness = async (userData: Business) => {
-//   const { companyName, firstName, lastName, preferredContact, description, charges, offer } = userData;
-
-//   try {
-//     const { account, database } = await createAdminClient();
-
-
-//     const user = await getLoggedInUser();
-//     if (!user || !user.$id) {
-//       throw new Error('User is not logged in or userId is missing');
-//     }
-
-//     console.log("User ID:", user.$id);
-
-//     const businessId = ID.unique();
-
-//     // Create the new business document
-//     const newBusiness = await database.createDocument(
-//       DATABASE_ID!,
-//       BUSINESS_COLLECTION_ID!,
-//       businessId,
-//       {
-//         businessId,
-//         companyName,
-//         firstName,
-//         lastName,
-//         preferredContact,
-//         description,
-//         charges,
-//         offer,
-//       }
-//     );
-
-//     // Update the user's profile with the new business ID
-//     const updatedUser = await updateUserProfile(user.$id, { businessId });
-//     if (!updatedUser) {
-//       throw new Error('Failed to update user profile with business ID');
-//     }
-
-//     return JSON.stringify({ newBusiness, updatedUser });
-//   } catch (error) {
-//     console.error('Error creating business document:', error);
-//     throw new Error('Failed to create business document');
-//   }
-// };
-
-// export const updateBusiness = async (businessId: string, businessData: Partial<Business>): Promise<Business | null> => {
-//   try {
-//     const { database } = await createAdminClient();
-
-//     const updatedBusiness = await database.updateDocument(
-//       DATABASE_ID!,
-//       BUSINESS_COLLECTION_ID!,
-//       businessId,
-//       businessData
-//     );
-
-//     console.log("Updated business data:", updatedBusiness);
-//     return parseStringify(updatedBusiness) as Business;
-//   } catch (error) {
-//     console.error("Error updating business:", error);
-//     return null;
-//   }
-// };
-
-// export const getUserBusiness = async (): Promise<Business | null> => {
-//   try {
-//     const { database } = await createAdminClient();
-
-//     // Step 1: Get the logged-in user
-//     const user = await getLoggedInUser();
-//     if (!user) {
-//       console.warn("No logged-in user found.");
-//       return null;
-//     }
-
-//     // Step 2: Fetch additional user info, including businessId
-//     const fullUserInfo = await getUserInfo({ userId: user.$id });
-//     if (!fullUserInfo || !fullUserInfo.businessId) {
-//       console.warn("User does not have an associated business.");
-//       return null;
-//     }
-
-//     // Step 3: Fetch the business document using businessId
-//     const business = await database.getDocument(
-//       DATABASE_ID!,
-//       BUSINESS_COLLECTION_ID!,
-//       fullUserInfo.businessId
-//     );
-
-//     console.log("Fetched business:", business);
-//     return parseStringify(business) as Business;
-//   } catch (error) {
-//     console.error("Error fetching user business:", error);
-//     return null;
-//   }
-// };
-
-// export const fetchCompanies = async (): Promise<CompanyDocument[]> => {
-
-//   if (!DATABASE_ID || !BUSINESS_COLLECTION_ID) {
-//     throw new Error("Environment variables for database or collection ID are missing.");
-//   }
-
-//   try {
-//     const { database } = await createAdminClient();
-//     const response = await database.listDocuments(DATABASE_ID, BUSINESS_COLLECTION_ID);
-
-//     //console.log("company image", response.documents[2].images);
-
-//     return response.documents.map((doc: any) => ({
-//       $id: doc.$id,
-//       companyName: doc.companyName ?? "Unknown",
-//       firstName: doc.firstName ?? "Unknown",
-//       lastName: doc.lastName ?? "Unknown",
-//       image: doc.images && doc.images.length > 0 ? doc.images[0] : "Unknown",
-//     }));
-//   } catch (error) {
-//     console.error("Error fetching companies:", error);
-//     throw new Error("Failed to fetch companies");
-//   }
-// };
-
-// export const generateImageUrl = (fileId: string): string => {
-
-//   return `${ENDPOINT}/storage/buckets/${BUSINESS_STORAGE_BUCKET_ID}/files/${fileId}/view?project=${PROJECT}&project=${PROJECT}&mode=admin`;
-// };
-
-// export const uploadImageToAppwrite = async (file: File): Promise<string> => {
-//   const { storage } = await createAdminClient();
-//   const { account } = await createSessionClient();
-//   const user = await account.get();
-  
-
-//   try {
-//     const response = await storage.createFile(
-//       BUSINESS_STORAGE_BUCKET_ID!,
-//       ID.unique(),
-//       file,
-//       [
-//         Permission.read(Role.any()),
-//         Permission.update(Role.user(user.$id)), 
-//       ]
-//     );
-
-//     return response.$id; 
-//   } catch (error) {
-//     console.error("Error uploading image to Appwrite:", error);
-//     throw new Error("Failed to upload image to Appwrite");
-//   }
-// };
+    console.log("Review submitted successfully.");
+  } catch (error) {
+    console.error("Error submitting review:", error);
+    throw error;
+  }
+};

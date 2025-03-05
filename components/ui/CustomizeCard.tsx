@@ -14,22 +14,24 @@ import {
 } from "@/components/ui/card"
 import { Switch } from "@/components/ui/switch"
 import SliderWithNumber from "@/components/ui/NumberSlider";
+import { CustomizeCardProps } from "@/types";
+import { saveNumberOfImages } from "@/lib/actions/business.actions";
 
-const CustomizeCard: React.FC<CustomizeCardProps> = ({ switches, numberOfImages, setNumberOfImages, }) => {
+const CustomizeCard: React.FC<CustomizeCardProps> = ({ switches }) => {
   const {
     showCompanyName,
     setShowCompanyName,
     showWhoYouAre,
     setShowWhoYouAre,
-    showPackages,
-    setShowPackages,
     showContact,
     setShowContact,
     showCompanyDescription,
-    setShowCompanyDescription
+    setShowCompanyDescription,
+    showBackground,
+    setShowBackground,
   } = switches;
   return (
-    <Card>
+    <Card className="bg-white">
       <CardHeader>
         <CardTitle>Customize</CardTitle>
         <CardDescription>Which fields do you want to show on your page?</CardDescription>
@@ -84,21 +86,6 @@ const CustomizeCard: React.FC<CustomizeCardProps> = ({ switches, numberOfImages,
           <Plus />
           <div className="flex-1 space-y-1">
             <p className="text-sm font-medium leading-none">
-              Packages You Offer
-            </p>
-            <p className="text-sm text-muted-foreground">
-              Do you offer fixed packages?
-            </p>
-          </div>
-          <Switch
-            checked={showPackages}
-            onCheckedChange={(checked) => setShowPackages(checked)}
-          />
-        </div>
-        <div className=" flex items-center space-x-4 rounded-md border p-4">
-          <Plus />
-          <div className="flex-1 space-y-1">
-            <p className="text-sm font-medium leading-none">
               Your Preferred Contact
             </p>
             <p className="text-sm text-muted-foreground">
@@ -110,10 +97,21 @@ const CustomizeCard: React.FC<CustomizeCardProps> = ({ switches, numberOfImages,
             onCheckedChange={(checked) => setShowContact(checked)}
           />
         </div>
-        <SliderWithNumber
-          value={numberOfImages}
-          onValueChange={(value) => setNumberOfImages(value)}
-        />
+        <div className=" flex items-center space-x-4 rounded-md border p-4">
+          <Plus />
+          <div className="flex-1 space-y-1">
+            <p className="text-sm font-medium leading-none">
+              Background Image?
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Seperates description and packages.
+            </p>
+          </div>
+          <Switch
+            checked={showBackground}
+            onCheckedChange={(checked) => setShowBackground(checked)}
+          />
+        </div>
       </CardContent>
       <CardFooter>
         <Button className="w-full">

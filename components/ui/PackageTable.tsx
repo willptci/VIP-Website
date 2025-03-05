@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import * as React from "react"
+import * as React from "react";
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -12,11 +12,10 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
-} from "@tanstack/react-table"
-import { ArrowUpDown, ChevronDown, MoreHorizontal } from "lucide-react"
+} from "@tanstack/react-table";
+import { ArrowUpDown } from "lucide-react";
 
-import { Button } from "@/components/ui/button"
-import { Checkbox } from "@/components/ui/checkbox"
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -24,120 +23,88 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
-import { fetchBusinessPackages } from "@/lib/actions/business.actions"
-
-export type Package = {
-  id: string
-  amount: number
-  status: boolean
-  capacity: number
-  title: string
-  createdAt: string;
-}
+} from "@/components/ui/table";
+import { Package } from "@/types";
+import TableDropDown from "./TableDropDown";
 
 export const columns: ColumnDef<Package>[] = [
   {
-    id: "select",
-    header: ({ table }) => (
-      <Checkbox
-        checked={
-          table.getIsAllPageRowsSelected() ||
-          (table.getIsSomePageRowsSelected() && "indeterminate")
-        }
-        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label="Select all"
-      />
-    ),
-    cell: ({ row }) => (
-      <Checkbox
-        checked={row.getIsSelected()}
-        onCheckedChange={(value) => row.toggleSelected(!!value)}
-        aria-label="Select row"
-      />
-    ),
-    enableSorting: false,
-    enableHiding: false,
+    accessorKey: "title",
+    header: "Package",
+    cell: ({ row }) => <div className="text-lg font-semibold pl-3">{row.getValue("title")}</div>,
   },
   {
     accessorKey: "status",
     header: "Status",
     cell: ({ row }) => (
       <div className="capitalize">
-        {row.getValue<boolean>("status") ? "available" : "unavailable"}
+        {row.getValue<boolean>("status") ? "Available" : "Unavailable"}
       </div>
     ),
   },
   {
-    accessorKey: "title",
-    header: () => <div className="text-left">Package</div>,
-    cell: ({ row }) => <div className="lowercase">{row.getValue("title")}</div>,
+    accessorKey: "capacity",
+    header: "Max Capacity",
+    cell: ({ row }) => <div>{row.getValue("capacity")}</div>,
   },
   {
-    accessorKey: "capacity",
-    header: () => <div className="text-left">Capacity</div>,
-    cell: ({ row }) => <div className="lowercase">{row.getValue("capacity")}</div>,
+    accessorKey: "total",
+    header: "Time",
+    cell: ({ row }) => <div>{row.getValue("total")}</div>,
+  },
+  {
+    accessorKey: "rating",
+    header: "Rating",
+    cell: ({ row }) => <div>5</div>,
   },
   {
     accessorKey: "amount",
-    header: ({ column }) => {
-        return (
-          <div className="flex justify-end">
-            <Button
-                variant="ghost"
-                onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-                className=""
-            >
-                Amount
-                <ArrowUpDown />
-            </Button>
-          </div>
-        )
-      },
+    header: ({ column }) => (
+      <div className="flex justify-end">
+        <Button
+          variant="ghost"
+          onClick={() =>
+            column.toggleSorting(column.getIsSorted() === "asc")
+          }
+        >
+          Amount
+          <ArrowUpDown />
+        </Button>
+      </div>
+    ),
     cell: ({ row }) => {
-      const amount = parseFloat(row.getValue("amount"))
-
-      // Format the amount as a dollar amount
+      const amount = parseFloat(row.getValue("amount"));
       const formatted = new Intl.NumberFormat("en-US", {
         style: "currency",
         currency: "USD",
-      }).format(amount)
-
-      return <div className="text-right font-medium">{formatted}</div>
+      }).format(amount);
+      return <div className="text-right font-medium">{formatted}</div>;
     },
   },
-]
+  {
+    accessorKey: "per",
+    header: "Per",
+    cell: ({ row }) => <div className="flex justiify-end">{row.getValue("per")}</div>,
+  },
+];
 
-export function DataTableDemo({ packages }: { packages: Package[] }) {
-  const [sorting, setSorting] = React.useState<SortingState>([])
+export function DataTableDemo({ packages, onSelectPackage }: { packages: Package[], onSelectPackage: (pkg: Package | null) => void }) {
+  const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
-  )
+  );
   const [columnVisibility, setColumnVisibility] =
-    React.useState<VisibilityState>({})
-  const [rowSelection, setRowSelection] = React.useState({})
+    React.useState<VisibilityState>({});
+  // const [rowSelection, setRowSelection] = React.useState({});
+  const [selectedRow, setSelectedRow] = React.useState<string | null>(null);
 
-  console.log("Rendering DataTableDemo with packages:", packages);
-
-  // const [data, setData] = React.useState<Package[]>([]);
-  // const [loading, setLoading] = React.useState(true);
-
-  // React.useEffect(() => {
-  //   const fetchData = async () => {
-  //     try {
-  //       setLoading(true);
-  //       const packages = await fetchBusinessPackages();
-  //       setData(packages);
-  //     } catch (error) {
-  //       console.error("Failed to fetch packages:", error);
-  //       alert("Error loading packages. Please try again.");
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   };
-
-  //   fetchData();
-  // }, []);
+  const handleRowSelectionAndExpansion = (rowId: string, rowData: Package) => {
+    setSelectedRow((prev) => {
+      const isSelected = prev === rowId; // Check if the current row is already selected
+      onSelectPackage(isSelected ? null : rowData); // Pass the selected package or null
+      return isSelected ? null : rowId; // Toggle selection
+    });
+  };
 
   const table = useReactTable({
     data: packages,
@@ -149,57 +116,70 @@ export function DataTableDemo({ packages }: { packages: Package[] }) {
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
-    onRowSelectionChange: setRowSelection,
+    // onRowSelectionChange: setRowSelection,
     state: {
       sorting,
       columnFilters,
       columnVisibility,
-      rowSelection,
+      // rowSelection,
     },
-  })
-
-  // if (loading) {
-  //   return <p>Loading...</p>;
-  // }
+  });
 
   return (
-    <div className="w-full">
+    <div className="w-full text-custom-8 font-syne">
       <div className="rounded-md border">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
-                  return (
-                    <TableHead key={header.id}>
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
-                    </TableHead>
-                  )
-                })}
+                {headerGroup.headers.map((header) => (
+                  <TableHead key={header.id}>
+                    {header.isPlaceholder
+                      ? null
+                      : flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
+                  </TableHead>
+                ))}
               </TableRow>
             ))}
           </TableHeader>
           <TableBody>
             {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </TableCell>
-                  ))}
-                </TableRow>
+                <React.Fragment key={row.id}>
+                  <TableRow
+                    data-state={
+                      selectedRow === row.id && "selected"
+                    } /* Highlight selected row */
+                    onClick={() =>
+                      handleRowSelectionAndExpansion(row.id, row.original)
+                    }
+                    className="cursor-pointer hover:bg-gray-100"
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id}>
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                  {selectedRow === row.id && (
+                    <TableRow>
+                      <TableCell
+                        colSpan={columns.length}
+                        className="bg-gray-50 p-4"
+                      >
+                        <div>
+                          <TableDropDown packageData={row.original} />
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </React.Fragment>
               ))
             ) : (
               <TableRow>
@@ -215,5 +195,5 @@ export function DataTableDemo({ packages }: { packages: Package[] }) {
         </Table>
       </div>
     </div>
-  )
+  );
 }

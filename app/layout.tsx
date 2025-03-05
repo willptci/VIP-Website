@@ -2,14 +2,21 @@ export const dynamic = 'force-dynamic'
 
 import type { Metadata } from "next";
 import { Inter, IBM_Plex_Serif} from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
+import AuthProvider from '@/state/AuthProvider';
+import { Toaster } from "sonner";
 
-const inter = Inter({ subsets: ["latin"], variable: '--font-inter' });
-const ibmPlexSerif = IBM_Plex_Serif({
-  subsets: ['latin'],
-  weight: ['400', '700'],
-  variable: '--font-ibm-plex-serif'
-})
+const syne = localFont({
+  src: [
+    { path: "../public/fonts/Syne-Regular.ttf", weight: "400" },
+    { path: "../public/fonts/Syne-Medium.ttf", weight: "500" },
+    { path: "../public/fonts/Syne-SemiBold.ttf", weight: "600" },
+    { path: "../public/fonts/Syne-Bold.ttf", weight: "700" },
+    { path: "../public/fonts/Syne-ExtraBold.ttf", weight: "800" },
+  ],
+  variable: "--font-syne",
+});
 
 export const metadata: Metadata = {
   title: "Andros",
@@ -26,7 +33,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${inter.variable} ${ibmPlexSerif.variable}`}>{children}</body>
+      <body className={syne.variable}>
+        <AuthProvider>
+          {children}
+        </AuthProvider>
+        <Toaster />
+      </body>
     </html>
   );
 }

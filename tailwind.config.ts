@@ -71,6 +71,18 @@ const config = {
         ring: {
           1: "#3b82f6",
         },
+        custom: {
+          1: "#a6f4f9",
+          2: "#9cf0f8",
+          3: "#b7fcfd",
+          4: "#8feaf8",
+          5: "#02b2c3",
+          6: "#aae5f6",
+          7: "#5396c2",
+          8: "#3e423e",
+          9: "#d5e3ea",
+          10: "#80ddef",
+        }
       },
       backgroundImage: {
         "bank-gradient": "linear-gradient(90deg, #0179FE 0%, #4893FF 100%)",
@@ -86,9 +98,12 @@ const config = {
           "0px 12px 16px -4px rgba(16, 24, 40, 0.08), 0px 4px 6px -2px rgba(16, 24, 40, 0.03)",
         creditCard: "8px 10px 16px 0px rgba(0, 0, 0, 0.05)",
       },
+      // fontFamily: {
+      //   inter: "var(--font-inter)",
+      //   "ibm-plex-serif": "var(--font-ibm-plex-serif)",
+      // },
       fontFamily: {
-        inter: "var(--font-inter)",
-        "ibm-plex-serif": "var(--font-ibm-plex-serif)",
+        syne: ["var(--font-syne)", "sans-serif"],
       },
       keyframes: {
         "accordion-down": {
