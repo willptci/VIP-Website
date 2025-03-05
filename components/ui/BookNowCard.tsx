@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -28,31 +28,137 @@ import {
 } from "@/components/ui/select"
 import { Minus, Plus } from "lucide-react";
 import { Package } from "@/types";
+import { fetchBusinessSchedule } from "@/lib/actions/business.actions";
+import { useRouter } from "next/navigation";
 
 export function BookNowCard({
     selectedPackage,
     businessName,
+    businessId,
   }: {
     selectedPackage: Package | null;
     businessName: string;
+    businessId: string;
   }) {
+
+    const router = useRouter();
+
     const [selectedDate, setSelectedDate] = useState<Date | undefined>();
     const [popoverOpen, setPopoverOpen] = useState(false);
+
+    const [availableTimes, setAvailableTimes] = useState<string[]>([]);
+    const [selectedTime, setSelectedTime] = useState<string | undefined>();
+
     const [adults, setAdults] = useState(1);
     const [children, setChildren] = useState(0);
     const [infants, setInfants] = useState(0);
 
-    const handleBooking = () => {
-        if (!selectedDate) {
-        alert("Please select a date.");
-        return;
+    useEffect(() => {
+        if (selectedDate) {
+            fetchScheduleForDay(selectedDate);
         }
-        alert(`Booking confirmed for ${name} on ${selectedDate.toLocaleDateString()}.`);
+    }, [selectedDate, selectedPackage]);
+
+    const fetchScheduleForDay = async (date: Date) => {
+        const schedule = await fetchBusinessSchedule();
+        const dayKey = date.toLocaleDateString("en-US", { weekday: "long" }).toLowerCase();
+
+        const openHours = schedule.openHours.find((oh) => oh.selectedDays.includes(dayKey));
+        const fixedSlots = schedule.fixedSlots.find((fs) => fs.selectedDays.includes(dayKey));
+
+        if (openHours) {
+            setAvailableTimes(generateAvailableSlots(openHours.start, openHours.end, openHours.unavailableTimes));
+        } else if (fixedSlots) {
+            setAvailableTimes(
+            fixedSlots.blockedSlots.flatMap((slot) =>
+                generateAvailableSlots(slot.start, slot.end, [])
+            )
+            );
+        } else {
+            setAvailableTimes([]);
+        }
+    };
+
+    const generateAvailableSlots = (
+        start: string,
+        end: string,
+        unavailableTimes: { start: string; end: string }[]
+      ): string[] => {
+        if (!selectedPackage) return [];
+    
+        const slots: string[] = [];
+        const packageDuration = selectedPackage.total ?? 60;
+        let currentTime = convertToMinutes(start);
+        const endTime = convertToMinutes(end);
+    
+        while (currentTime + packageDuration <= endTime) {
+          const timeStr = convertToTime(currentTime);
+    
+          if (
+            !unavailableTimes.some(
+              (unavailable) =>
+                currentTime >= convertToMinutes(unavailable.start) &&
+                currentTime < convertToMinutes(unavailable.end)
+            )
+          ) {
+            slots.push(timeStr);
+          }
+    
+          currentTime += 30;
+        }
+    
+        return slots;
+    };
+
+    const convertToMinutes = (time: string): number => {
+        const [hours, minutes] = time.split(":").map(Number);
+        return hours * 60 + minutes;
+    };
+    
+    const convertToTime = (minutes: number): string => {
+        const hours = Math.floor(minutes / 60);
+        const mins = minutes % 60;
+        const period = hours >= 12 ? "PM" : "AM";
+        return `${(hours % 12) || 12}:${mins.toString().padStart(2, "0")} ${period}`;
+    };
+
+    const handleBooking = () => {
+        if (!selectedDate || !selectedTime) {
+          alert("Please select a date and time.");
+          return;
+        }
+
+        console.log("PreBookingPage")
+        console.log("Booking Details:");
+        console.log("Title:", selectedPackage?.title || "");
+        console.log("Date:", selectedDate.toISOString());
+        console.log("Time:", selectedTime);
+        console.log("Adults:", adults);
+        console.log("Children:", children);
+        console.log("Infants:", infants);
+        console.log("Price:", selectedPackage?.amount);
+        console.log("Business ID:", businessId || "");
+        console.log("Business Name:", businessName || "");
+        console.log("PreBookingPageEnd")
+        console.log("Total Duration (minutes):", selectedPackage?.total || "Not Provided");
+    
+        router.push(
+            `/confirm-purchase?title=${encodeURIComponent(selectedPackage?.title || "")}` +
+            `&date=${selectedDate.toISOString()}` +
+            `&time=${selectedTime}` +
+            `&adults=${adults}` +
+            `&children=${children}` +
+            `&infants=${infants}` +
+            `&price=${selectedPackage?.amount}` +
+            `&businessId=${businessId || ""}` +
+            `&businessName=${encodeURIComponent(businessName || "")}` +
+            `&totalDuration=${selectedPackage?.total || 0}`
+        );       
     };
 
     const handleDateSelect = (date: Date | undefined) => {
         setSelectedDate(date);
-        setPopoverOpen(false); // Close the popover when a date is selected
+        setPopoverOpen(false);
     };
 
     const increment = (setter: React.Dispatch<React.SetStateAction<number>>) =>
@@ -83,7 +189,7 @@ export function BookNowCard({
                         ? new Intl.NumberFormat("en-US", {
                             style: "currency",
                             currency: "USD",
-                        }).format(totalPrice) // Convert to number and handle invalid cases
+                        }).format(totalPrice)
                         : "--"}
                 </p>
             </div>
@@ -99,27 +205,31 @@ export function BookNowCard({
                         : "Pick Date"}
                     </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-80 shadow-lg rounded-md">
+                <PopoverContent className="shadow-lg rounded-md bg-white">
                     <Calendar
-                    mode="single"
-                    selected={selectedDate}
-                    onSelect={handleDateSelect}
-                    className="bg-white"
+                        mode="single"
+                        selected={selectedDate}
+                        onSelect={handleDateSelect}
                     />
                 </PopoverContent>
                 </Popover>
 
                 <div className="flex flex-col space-y-1.5">
                 <Label htmlFor="availableTimes" className="text-md">Available Times</Label>
-                <Select>
+                <Select onValueChange={(value) => setSelectedTime(value)}>
                     <SelectTrigger id="availableTimes">
-                    <SelectValue placeholder="Select" />
+                    <SelectValue placeholder="Select Time" />
                     </SelectTrigger>
                     <SelectContent position="popper" className="bg-white">
-                    <SelectItem value="next">9:00am</SelectItem>
-                    <SelectItem value="sveltekit">10:00am</SelectItem>
-                    <SelectItem value="astro">11:00am</SelectItem>
-                    <SelectItem value="nuxt">12:00pm</SelectItem>
+                        {availableTimes.length > 0 ? (
+                            availableTimes.map((time, index) => (
+                            <SelectItem key={index} value={time}>
+                                {time}
+                            </SelectItem>
+                            ))
+                        ) : (
+                            <p className="text-gray-500 text-center">No times available</p>
+                        )}
                     </SelectContent>
                 </Select>
                 </div>

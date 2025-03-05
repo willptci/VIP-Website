@@ -10,6 +10,10 @@ const Profile = () => {
   const role = useAuthStore((state) => state.role);
   const isHydrating = useAuthStore((state) => state.isHydrating);
 
+  console.log("User:", user);
+  console.log("Role:", role);
+  console.log("Is Hydrating:", isHydrating);
+
   if (isHydrating)
     return (
       <div className="flex justify-center items-center h-screen">
@@ -21,7 +25,8 @@ const Profile = () => {
     return <SignInPrompt />;
   }
 
-  return role === "business" ? <BusinessProfilePage /> : <UserProfilePage />;
+  return <UserProfilePage />
+  // return role === "business" ? <BusinessProfilePage /> : <UserProfilePage />;
 };
 
 export default Profile;

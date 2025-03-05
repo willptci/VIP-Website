@@ -9,8 +9,10 @@ export default async function BusinessPage({ params }: { params: { businessId: s
     const businessData = await fetchShowcasingBusinessData(businessId);
     const packages = await fetchShowcasingBusinessPackages(businessId);
 
+    console.log(businessData)
+
     return (
-      <BusinessPageClient businessData={businessData} packages={packages} />
+      <BusinessPageClient businessData={businessData} packages={packages} businessId={businessId}/>
     );
   } catch (error) {
     console.error("Error fetching business data:", error);

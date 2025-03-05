@@ -5,6 +5,7 @@ import { Inter, IBM_Plex_Serif} from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
 import AuthProvider from '@/state/AuthProvider';
+import { Toaster } from "sonner";
 
 const syne = localFont({
   src: [
@@ -36,6 +37,7 @@ export default function RootLayout({
         <AuthProvider>
           {children}
         </AuthProvider>
+        <Toaster />
       </body>
     </html>
   );

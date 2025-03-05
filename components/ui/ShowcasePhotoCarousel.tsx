@@ -30,7 +30,8 @@ export function PhotoCarousel({ photos }: PhotoCarouselProps) {
                         <Image
                             src={photos[index]}
                             alt={`Photo ${index + 1}`}
-                            layout="fill"
+                            fill
+                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 600px"
                             objectFit="cover"
                             className="rounded-lg"
                         />

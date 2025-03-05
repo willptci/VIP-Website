@@ -45,4 +45,14 @@ export const packageFormSchema = () => z.object({
   total: z.number().min(0.25, 'Total must be at least 15 minutes'),
 });
 
+export const userFormSchema = () => z.object({
+  uid: z.string().min(1, 'User ID is required'),
+  firstName: z.string().min(1, 'First name is required'),
+  lastName: z.string().min(1, 'Last name is required'),
+  email: z.string().email('Invalid email').optional(),
+  telephone: z.string().min(10, 'Must enter a 10-digit phone number').optional(),
+  description: z.string().optional(),
+  profileImageUrl: z.string().url('Invalid image URL').optional(),
+});
+
 export const parseStringify = (value: any) => JSON.parse(JSON.stringify(value));

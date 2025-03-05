@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useAuthStore } from "@/state/authState";
 import Andros_Logo from "@/public/icons/bonefish.svg";
 import Image from "next/image";
-import { usePathname } from "next/navigation"; // Import to check route
+import { usePathname } from "next/navigation";
 
 const ProfileNav: React.FC = () => {
   const role = useAuthStore((state) => state.role);
