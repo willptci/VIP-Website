@@ -1,125 +1,69 @@
 "use client";
-import React, { useState } from "react";
-import { Plus, Check } from "lucide-react"
-
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
+import React from "react";
+import { v4 as uuidv4 } from "uuid";
+import Row from "./CustomizeRow";
+import { RowData } from "@/types";
 import {
   Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
-import { Switch } from "@/components/ui/switch"
-import SliderWithNumber from "@/components/ui/NumberSlider";
-import { CustomizeCardProps } from "@/types";
-import { saveNumberOfImages } from "@/lib/actions/business.actions";
+  CardContent,
+  CardDescription,
+} from "@/components/ui/card";
+import { Button } from "./button";
 
-const CustomizeCard: React.FC<CustomizeCardProps> = ({ switches }) => {
-  const {
-    showCompanyName,
-    setShowCompanyName,
-    showWhoYouAre,
-    setShowWhoYouAre,
-    showContact,
-    setShowContact,
-    showCompanyDescription,
-    setShowCompanyDescription,
-    showBackground,
-    setShowBackground,
-  } = switches;
+interface CustomizeCardProps {
+  rows: RowData[];
+  setRows: React.Dispatch<React.SetStateAction<RowData[]>>;
+}
+
+const CustomizeCard: React.FC<CustomizeCardProps> = ({ rows, setRows }) => {
+  const addRow = () => {
+    const newRow: RowData = {
+      id: uuidv4(),
+      left: { layout: "vertical", items: [] },
+      right: { layout: "vertical", items: [] },
+    };
+    setRows((prev) => [...prev, newRow]);
+  };
+
+  const removeItem = (rowIndex: number, zoneKey: "left" | "right", itemId: string) => {
+    setRows((prevRows) => {
+      const updatedRows = [...prevRows];
+      const zone = updatedRows[rowIndex][zoneKey];
+      zone.items = zone.items.filter((item) => item.id !== itemId);
+      return updatedRows;
+    });
+  };
+
   return (
     <Card className="bg-white">
       <CardHeader>
         <CardTitle>Customize</CardTitle>
-        <CardDescription>Which fields do you want to show on your page?</CardDescription>
+        <CardDescription>
+          Drag and drop components between rows. Each row has left and right zones.
+        </CardDescription>
+        <div className="">
+          <Button onClick={addRow} className="text-sm mt-2 bg-custom-9">
+            + Add Row
+          </Button>
+        </div>
       </CardHeader>
-      <CardContent className="grid gap-4">
-        <div className=" flex items-center space-x-4 rounded-md border p-4">
-          <Plus />
-          <div className="flex-1 space-y-1">
-            <p className="text-sm font-medium leading-none">
-              Company Name
-            </p>
-            <p className="text-sm text-muted-foreground">
-              Your Company and its description.
-            </p>
-          </div>
-          <Switch
-            checked={showCompanyName}
-            onCheckedChange={(checked) => setShowCompanyName(checked)}
-          />
-        </div>
-        <div className=" flex items-center space-x-4 rounded-md border p-4">
-          <Plus />
-          <div className="flex-1 space-y-1">
-            <p className="text-sm font-medium leading-none">
-              Advertise Your Business
-            </p>
-            <p className="text-sm text-muted-foreground">
-              How would you describe your business?
-            </p>
-          </div>
-          <Switch
-            checked={showCompanyDescription}
-            onCheckedChange={(checked) => setShowCompanyDescription(checked)}
-          />
-        </div>
-        <div className=" flex items-center space-x-4 rounded-md border p-4">
-          <Plus />
-          <div className="flex-1 space-y-1">
-            <p className="text-sm font-medium leading-none">
-              Who You Are?
-            </p>
-            <p className="text-sm text-muted-foreground">
-              Your name and a bit about you.
-            </p>
-          </div>
-          <Switch
-            checked={showWhoYouAre}
-            onCheckedChange={(checked) => setShowWhoYouAre(checked)}
-          />
-        </div>
-        <div className=" flex items-center space-x-4 rounded-md border p-4">
-          <Plus />
-          <div className="flex-1 space-y-1">
-            <p className="text-sm font-medium leading-none">
-              Your Preferred Contact
-            </p>
-            <p className="text-sm text-muted-foreground">
-              How should clients contact you?
-            </p>
-          </div>
-          <Switch
-            checked={showContact}
-            onCheckedChange={(checked) => setShowContact(checked)}
-          />
-        </div>
-        <div className=" flex items-center space-x-4 rounded-md border p-4">
-          <Plus />
-          <div className="flex-1 space-y-1">
-            <p className="text-sm font-medium leading-none">
-              Background Image?
-            </p>
-            <p className="text-sm text-muted-foreground">
-              Seperates description and packages.
-            </p>
-          </div>
-          <Switch
-            checked={showBackground}
-            onCheckedChange={(checked) => setShowBackground(checked)}
-          />
+      <CardContent>
+        <div className="space-y-4">
+          {rows.map((row, rowIndex) => (
+            <Row
+              key={row.id}
+              row={row}
+              rowIndex={rowIndex}
+              setRows={setRows}
+              removeItem={removeItem}
+            />
+          ))}
         </div>
       </CardContent>
-      <CardFooter>
-        <Button className="w-full">
-          <Check /> Add all to website
-        </Button>
-      </CardFooter>
     </Card>
-  )
-}
+  );
+};
 
-export default CustomizeCard
+export default CustomizeCard;

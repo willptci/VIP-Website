@@ -1,54 +1,60 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { fetchBusinessData, fetchBusinessPackages, saveSettings, updateBusinessField, uploadPhotoForBusiness } from '@/lib/actions/business.actions'
+import { v4 as uuidv4 } from "uuid";
+import { fetchBusinessData, fetchBusinessPackages, updateBusinessField, uploadPhotoForBusiness } from '@/lib/actions/business.actions';
 import CustomizeCard from "@/components/ui/CustomizeCard";
+import ComponentPalette from "@/components/ui/ComponentPalette";
 import { DataTableDemo } from "@/components/ui/PackageTable";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Plus } from "lucide-react"
+import { Plus } from "lucide-react";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
-import { Package } from "@/types";
-import { Textarea } from "@/components/ui/textarea";
+import { Package, TextComponentType } from "@/types";
 import AddPackage from "@/components/ui/AddPackage";
+import { DragDropContext, DropResult } from "@hello-pangea/dnd";
+import { RowData, SectionComponent } from "@/types";
+import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
+import TextComponentRenderer from "@/components/ui/TextComponentRenderer";
 
-const businessOnboarding = () => {
-  const [showCompanyName, setShowCompanyName] = useState(true);
-  const [showCompanyDescription, setShowCompanyDescription] = useState(true);
-  const [showWhoYouAre, setShowWhoYouAre] = useState(true);
-  const [showContact, setShowContact] = useState(true);
-  const [showBackground, setShowBackground] = useState(true);
+interface TextComponent extends SectionComponent {
+  textType?: TextComponentType;
+  textIndex?: number;
+}
 
-  const [selectedPackage, setSelectedPackage] = React.useState<Package | null>(
-    null
-  );
-
+const BusinessOnboarding = () => {
   const router = useRouter();
-  const [businessData, setBusinessData] = useState<any>(null);
-  const [isEditing, setIsEditing] = useState({
-    companyName: false,
-    companyDescription: false,
-    ownerDescription: false,
-    phoneNumber: false,
-  });
-  const [loading, setLoading] = useState(true);
   const [authId, setAuthId] = useState<string | null>(null);
-
+  const [businessData, setBusinessData] = useState<any>({});
+  const [loading, setLoading] = useState(true);
   const [tableData, setTableData] = useState<Package[]>([]);
+  const setSelectedPackage = React.useState<Package | null>()[1];
+
+  const [layoutRows, setLayoutRows] = useState<RowData[]>([{
+    id: uuidv4(),
+    left: { layout: "vertical", items: [] },
+    right: { layout: "vertical", items: [] },
+  }]);
+
+  const [availableComponents] = useState<SectionComponent[]>([
+    { id: uuidv4(), type: "photo" },
+    { id: uuidv4(), type: "text" },
+    { id: uuidv4(), type: "profile-picture" },
+    { id: uuidv4(), type: "reviews" },
+    { id: uuidv4(), type: "contact" },
+    { id: uuidv4(), type: "background-photo" },
+    { id: uuidv4(), type: "booking" },
+    { id: uuidv4(), type: "packages" },
+  ]);
 
   useEffect(() => {
     const auth = getAuth();
-
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
-        const uid = user.uid;
-        setAuthId(uid);
-
+        setAuthId(user.uid);
         try {
-          const data = await fetchBusinessData(uid);
+          const data = await fetchBusinessData(user.uid);
           setBusinessData(data);
-
-          //might not need
           const packages = await fetchBusinessPackages();
           setTableData(packages);
         } catch (error) {
@@ -59,10 +65,8 @@ const businessOnboarding = () => {
         alert("You must be logged in to access your business data.");
         router.push("/login");
       }
-
       setLoading(false);
     });
-
     return () => unsubscribe();
   }, [router]);
 
@@ -72,22 +76,13 @@ const businessOnboarding = () => {
         ...prev,
         [field]: value,
       }));
-
+  
       await updateBusinessField(field, value);
   
-      console.log(`Field "${field}" updated successfully in Firestore.`);
+      console.log(`Field "${field}" updated successfully.`);
     } catch (error) {
       console.error(`Error updating field "${field}":`, error);
       alert("Failed to update field. Please try again.");
-    }
-  };
-
-  const handleKeyDown = (
-    e: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>,
-    field: string
-  ) => {
-    if (e.key === "Enter") {
-      setIsEditing((prev) => ({ ...prev, [field]: false }));
     }
   };
 
@@ -102,7 +97,7 @@ const businessOnboarding = () => {
           const photoUrl = await uploadPhotoForBusiness(file, authId);
           setBusinessData((prev: any) => {
             const updatedPhotos = [...(prev.photos || [])];
-            updatedPhotos[index] = photoUrl; // Replace or add the photo
+            updatedPhotos[index] = photoUrl;
             return { ...prev, photos: updatedPhotos };
           });
         } catch (error) {
@@ -113,311 +108,284 @@ const businessOnboarding = () => {
     fileInput.click();
   };
 
-  const navigateToHome = async () => {
-    try {
-      const settings = {
-        showCompanyName,
-        showCompanyDescription,
-        showWhoYouAre,
-        showContact,
-        showBackground,
+  const handleDragEnd = (result: DropResult) => {
+    if (!result.destination) return;
+  
+    const [sourceRowIndexStr, sourceZone] = result.source.droppableId.split("-");
+    const [destRowIndexStr, destZone] = result.destination.droppableId.split("-");
+  
+    const sourceRowIndex = parseInt(sourceRowIndexStr);
+    const destRowIndex = parseInt(destRowIndexStr);
+  
+    const sourceZoneKey = sourceZone as "left" | "right";
+    const destZoneKey = destZone as "left" | "right";
+  
+    const updatedRows = [...layoutRows];
+  
+    // Palette ➝ Layout drop
+    if (result.source.droppableId === "palette") {
+      if (
+        isNaN(destRowIndex) ||
+        !["left", "right"].includes(destZoneKey) ||
+        !updatedRows[destRowIndex]
+      ) {
+        console.warn("Invalid palette drop destination", result);
+        return;
+      }
+    
+      const componentFromPalette = availableComponents[result.source.index];
+    
+      // Count how many photos exist to assign unique indices
+      const allUsedPhotoIndices = updatedRows
+        .flatMap((row) => ["left", "right"].flatMap((zone) =>
+          row[zone as "left" | "right"].items
+            .map((item) => item.photoIndex)
+            .filter((i) => typeof i === "number")
+        )) as number[];
+    
+      const nextAvailablePhotoIndex = Math.max(-1, ...allUsedPhotoIndices) + 1;
+    
+      const newComponent: SectionComponent = {
+        id: uuidv4(),
+        type: componentFromPalette.type,
+        ...(componentFromPalette.type === "text" && {
+          textType: undefined,
+          value: "",
+        }),
+        ...(["photo", "profile-picture", "background-photo"].includes(componentFromPalette.type) && {
+          photoIndex: nextAvailablePhotoIndex,
+        }),
+      };
+    
+      const destItems = [...updatedRows[destRowIndex][destZoneKey].items];
+      destItems.splice(result.destination.index, 0, newComponent);
+    
+      updatedRows[destRowIndex][destZoneKey].items = destItems;
+      setLayoutRows(updatedRows);
+
+      if (componentFromPalette.type === "text") {
+        const selectTextType = async () => {
+          const anchor = document.querySelector(`[data-id="${newComponent.id}"]`);
+          const textType = await showTextTypeDropdown(anchor as HTMLElement);
+          if (textType === "new") {
+            const maxIndex = Math.max(
+              -1,
+              ...layoutRows.flatMap(row =>
+                [...row.left.items, ...row.right.items]
+                  .filter(item => item.type === "text" && (item as TextComponent).textIndex !== undefined)
+                  .map(item => (item as TextComponent).textIndex ?? 0)
+              )
+            );
+            
+            updateComponentTextType(newComponent.id, "new", maxIndex + 1);
+          } else {
+            updateComponentTextType(newComponent.id, textType);
+          }
+        };
+        selectTextType();
+      }
+      return;
+    }
+  
+    // Validate regular zone drops
+    if (
+      isNaN(sourceRowIndex) || isNaN(destRowIndex) ||
+      !["left", "right"].includes(sourceZoneKey) ||
+      !["left", "right"].includes(destZoneKey) ||
+      !updatedRows[sourceRowIndex] ||
+      !updatedRows[destRowIndex]
+    ) {
+      console.warn("Invalid layout drag result", result);
+      return;
+    }
+  
+    // Same zone move
+    if (sourceRowIndex === destRowIndex && sourceZoneKey === destZoneKey) {
+      const items = [...updatedRows[sourceRowIndex][sourceZoneKey].items];
+      const [moved] = items.splice(result.source.index, 1);
+      items.splice(result.destination.index, 0, moved);
+  
+      updatedRows[sourceRowIndex][sourceZoneKey].items = items;
+      setLayoutRows(updatedRows);
+      return;
+    }
+  
+    // Cross-zone move
+    const sourceItems = [...updatedRows[sourceRowIndex][sourceZoneKey].items];
+    const destItems = [...updatedRows[destRowIndex][destZoneKey].items];
+  
+    const [moved] = sourceItems.splice(result.source.index, 1);
+    destItems.splice(result.destination.index, 0, moved);
+  
+    updatedRows[sourceRowIndex][sourceZoneKey].items = sourceItems;
+    updatedRows[destRowIndex][destZoneKey].items = destItems;
+  
+    setLayoutRows(updatedRows);
+  };  
+
+  const showTextTypeDropdown = (anchorEl?: HTMLElement) => {
+    return new Promise<TextComponentType>((resolve) => {
+      const dropdown = document.createElement("select");
+      dropdown.className = "absolute z-50 bg-white border rounded shadow text-sm px-2 py-1";
+      
+      const options = [
+        { value: "companyDescription", label: "Company Description" },
+        { value: "ownerDescription", label: "Owner Description" },
+        { value: "contact", label: "Contact" },
+        { value: "new", label: "New Text" },
+      ];
+  
+      options.forEach(option => {
+        const opt = document.createElement("option");
+        opt.value = option.value;
+        opt.textContent = option.label;
+        dropdown.appendChild(opt);
+      });
+  
+      dropdown.onchange = () => {
+        document.body.removeChild(dropdown);
+        resolve(dropdown.value as TextComponentType);
       };
   
-      await saveSettings(settings);
+      document.body.appendChild(dropdown);
   
-      router.push("/");
-    } catch (error) {
-      console.error("Error saving settings:", error);
-      alert("Failed to save settings. Please try again.");
+      if (anchorEl) {
+        const rect = anchorEl.getBoundingClientRect();
+        dropdown.style.position = "absolute";
+        dropdown.style.top = `${rect.bottom + window.scrollY}px`;
+        dropdown.style.left = `${rect.left + window.scrollX}px`;
+      }
+    });
+  };
+
+  const updateComponentTextType = (componentId: string, textType: TextComponentType, textIndex?: number) => {
+    setLayoutRows(prev => {
+      const newRows = [...prev];
+      for (const row of newRows) {
+        for (const side of ["left", "right"] as const) {
+          const item = row[side].items.find(i => i.id === componentId);
+          if (item && item.type === "text") {
+            const textItem = item as TextComponent;
+            textItem.textType = textType;
+            if (textIndex !== undefined) {
+              textItem.textIndex = textIndex;
+            }
+            break;
+          }
+        }
+      }
+      return newRows;
+    });
+  };
+
+  const renderComponent = (component: SectionComponent) => {
+    switch (component.type) {
+      case "photo":
+        const photoIndex = component.photoIndex ?? 0;
+        return businessData.photos?.[photoIndex] ? (
+          <div
+            className="relative border shadow w-[150px] h-36 rounded-xl bg-cover bg-center"
+            style={{ backgroundImage: `url(${businessData.photos[photoIndex]})` }}
+          >
+            <Button
+              variant="secondary"
+              className="absolute top-1 right-1 p-1 w-6 h-6 rounded-full flex items-center justify-center"
+              onClick={() => handleImageUpload(photoIndex)}
+            >
+              <Plus />
+            </Button>
+          </div>
+        ) : (
+          <Button onClick={() => handleImageUpload(photoIndex)}>
+            <Plus /> Add Image
+          </Button>
+        );
+  
+      case "text":
+        const textComp = component as TextComponent;
+        return (
+          <TextComponentRenderer
+            component={textComp}
+            businessData={businessData}
+            updateComponentText={(id, newText) => {
+              const updatedRows = [...layoutRows];
+              for (const row of updatedRows) {
+                for (const side of ["left", "right"] as const) {
+                  const index = row[side].items.findIndex(i => i.id === id);
+                  if (index !== -1) {
+                    row[side].items[index].value = newText;
+                    break;
+                  }
+                }
+              }
+              setLayoutRows(updatedRows);
+            }}
+            handleUpdateField={handleUpdateField}
+          />
+        );
+  
+      case "contact":
+        return (
+          <div className="flex gap-2 items-center">
+            <p className="font-medium">Contact:</p>
+            <Input
+              type="text"
+              value={businessData.phoneNumber}
+              onChange={(e) => handleUpdateField("phoneNumber", e.target.value)}
+              className="w-48"
+            />
+          </div>
+        );
+  
+      case "packages":
+        return (
+          <div className="bg-white shadow p-4 rounded-md">
+            <DataTableDemo packages={tableData} onSelectPackage={setSelectedPackage} />
+            <AddPackage addPackage={(pkg) => setTableData((prev) => [...prev, pkg])} />
+          </div>
+        );
+  
+      default:
+        return null;
     }
   };
 
-  if (loading) {
-    return <div>Loading...</div>;
-  }
+  if (loading) return <div>Loading...</div>;
 
   return (
-    <section className="p-10 h-full flex flex-col justify-center font-syne text-custom-8 bg-custom-9 ">
+    <section className="p-10 h-full flex flex-col justify-center font-syne text-custom-8 bg-custom-9">
       <div className="mb-5 font-extrabold gap-6 flex">
-          <h1 className="text-36 font-bold text-black">My Business Page</h1>
-          <Button onClick={navigateToHome} className="p-6 bg-custom-6 rounded-md text-white hover:bg-custom-1 hover:text-custom-8 text-3xl"> Save </Button>
+        <h1 className="text-36 font-bold text-black">My Business Page</h1>
       </div>
-      <div className="flex">
-        <div className="flex-col rounded-xl border p-10 shadow w-4/6 bg-white">
 
-          {showCompanyName && (
-            <div className="flex gap-5 justify-center items-center">
-              {isEditing.companyName ? (
-                <Input
-                  type="text"
-                  value={businessData.companyName}
-                  onChange={(e) => handleUpdateField("companyName", e.target.value)}
-                  onBlur={() => setIsEditing((prev) => ({ ...prev, companyName: false }))}
-                  onKeyDown={(e) => handleKeyDown(e, "companyName")}
-                  className="text-36 font-bold text-black w-auto"
-                  autoFocus
-                />
-              ) : (
-                <h1
-                  className="text-36 font-bold text-black"
-                  onClick={() => setIsEditing((prev) => ({ ...prev, companyName: true }))}
-                >
-                  {businessData.companyName}
-                </h1>
-              )}
-            </div>
-          )}
+      <DragDropContext onDragEnd={handleDragEnd}>
+        <div className="flex">
 
-          {!showCompanyName && (
-            <div className="flex gap-5 justify-center items-center">
-              <h1
-                className="text-36 font-bold text-black"
-              >
-                {businessData.firstName + " " + businessData.lastName}
-              </h1>
-            </div>
-          )}
-
-          {showCompanyDescription && (
-            <div className="flex mt-10 justify-center items-center gap-10">
-                <div>
-                  {businessData.photos?.[0] ? (
-                    <div
-                      className="relative border shadow w-[150px] h-36 rounded-xl bg-cover bg-center"
-                      style={{ backgroundImage: `url(${businessData.photos[0]})` }}
-                    >
-                      <Button
-                        variant="secondary"
-                        className="absolute top-1 right-1 p-1 w-6 h-6 rounded-full flex items-center justify-center"
-                        onClick={() => handleImageUpload(0)}
-                      >
-                        <Plus className=""/>
-                      </Button>
+          <div className="flex-col rounded-xl border p-10 shadow w-4/6 bg-white">
+            {layoutRows.map((row, rowIndex) => (
+              <div key={row.id} className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
+                {["left", "right"].map((zoneKey) => {
+                  const zone = row[zoneKey as "left" | "right"];
+                  return (
+                    <div key={zoneKey} className={`flex ${zone.layout === "horizontal" ? "flex-row" : "flex-col"} gap-4`}>
+                      {zone.items.map((item) => (
+                        <div key={item.id}>{renderComponent(item)}</div>
+                      ))}
                     </div>
-                  ) : (
-                    <Button
-                      variant="secondary"
-                      className=""
-                      onClick={() => handleImageUpload(0)}
-                    >
-                      <Plus /> Add Image
-                    </Button>
-                  )}
-                </div>
-              {isEditing.companyDescription ? (
-                <Textarea
-                value={businessData.companyDescription}
-                onChange={(e) => handleUpdateField("companyDescription", e.target.value)}
-                onBlur={() => setIsEditing((prev) => ({ ...prev, companyDescription: false }))}
-                onKeyDown={(e) => handleKeyDown(e, "companyDescription")}
-                className="w-full h-28 rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
-                autoFocus
-                />
-              ) : (
-                <p
-                  className="p-5"
-                  onClick={() => setIsEditing((prev) => ({ ...prev, companyDescription: true }))}
-                >
-                  {businessData.companyDescription}
-                </p>
-              )}
-            </div>
-          )}
-
-          {showWhoYouAre && (
-            <div>
-              {!showCompanyDescription ? (
-                <div className="flex mt-10 justify-center items-center gap-10">
-                    <div className="flex-col">
-                      <div>
-                        {businessData.photos?.[1] ? (
-                          <div
-                            className="relative border shadow w-[150px] h-36 rounded-xl bg-cover bg-center"
-                            style={{ backgroundImage: `url(${businessData.photos[1]})` }}
-                          >
-                            <Button
-                              variant="secondary"
-                              className="absolute top-1 right-1 p-1 w-6 h-6 rounded-full flex items-center justify-center"
-                              onClick={() => handleImageUpload(1)}
-                            >
-                              <Plus className=""/>
-                            </Button>
-                          </div>
-                        ) : (
-                          <Button
-                            variant="secondary"
-                            className=""
-                            onClick={() => handleImageUpload(1)}
-                          >
-                            <Plus /> Add Image
-                          </Button>
-                        )}
-                      </div>
-                      {showCompanyName && (
-                        <p className="mt-2 text-center">{businessData.firstName + " " + businessData.lastName}</p>
-                      )}
-                    </div>
-                  {isEditing.ownerDescription ? (
-                    <Textarea
-                      value={businessData.ownerDescription}
-                      onChange={(e) => handleUpdateField("ownerDescription", e.target.value)}
-                      onBlur={() => setIsEditing((prev) => ({ ...prev, ownerDescription: false }))}
-                      onKeyDown={(e) => handleKeyDown(e, "ownerDescription")}
-                      className="w-full h-28 rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
-                      autoFocus
-                    />
-                  ) : (
-                    <p
-                      className="p-5"
-                      onClick={() => setIsEditing((prev) => ({ ...prev, ownerDescription: true }))}
-                    >
-                      {businessData.ownerDescription}
-                    </p>
-                  )}
-                </div>
-              ) : (
-                <div className="flex mt-10 justify-center items-center gap-10">
-                  {isEditing.ownerDescription ? (
-                    <Textarea
-                      value={businessData.ownerDescription}
-                      onChange={(e) => handleUpdateField("ownerDescription", e.target.value)}
-                      onBlur={() => setIsEditing((prev) => ({ ...prev, ownerDescription: false }))}
-                      onKeyDown={(e) => handleKeyDown(e, "ownerDescription")}
-                      className="w-full h-28 rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
-                      autoFocus
-                    />
-                  ) : (
-                    <p
-                      className="p-5"
-                      onClick={() => setIsEditing((prev) => ({ ...prev, ownerDescription: true }))}
-                    >
-                      {businessData.ownerDescription}
-                    </p>
-                  )}
-                    <div className="flex-col">
-                      <div>
-                        {businessData.photos?.[1] ? (
-                          <div
-                            className="relative border shadow w-[150px] h-36 rounded-xl bg-cover bg-center"
-                            style={{ backgroundImage: `url(${businessData.photos[1]})` }}
-                          >
-                            <Button
-                              variant="secondary"
-                              className="absolute top-1 right-1 p-1 w-6 h-6 rounded-full flex items-center justify-center"
-                              onClick={() => handleImageUpload(1)}
-                            >
-                              <Plus className=""/>
-                            </Button>
-                          </div>
-                        ) : (
-                          <Button
-                            variant="secondary"
-                            className=""
-                            onClick={() => handleImageUpload(1)}
-                          >
-                            <Plus /> Add Image
-                          </Button>
-                        )}
-                      </div>
-                      {showCompanyName && (
-                        <p className="mt-2 text-center">{businessData.firstName + " " + businessData.lastName}</p>
-                      )}
-                    </div>
-                </div>
-              )}
-            </div>
-          )}
-
-          {showContact && (
-            <div className="flex justify-center items-center p-5 gap-5">
-              <p className="header-2">Contact me at</p>
-              {isEditing.phoneNumber ? (
-                <Input
-                  type="text"
-                  value={businessData.phoneNumber}
-                  onChange={(e) => handleUpdateField("phoneNumber", e.target.value)}
-                  onBlur={() => setIsEditing((prev) => ({ ...prev, phoneNumber: false }))}
-                  onKeyDown={(e) => handleKeyDown(e, "phoneNumber")}
-                  className="text-36 font-bold text-black w-auto"
-                  autoFocus
-                />
-              ) : (
-                <p
-                  className="header-2"
-                  onClick={() => setIsEditing((prev) => ({ ...prev, phoneNumber: true }))}
-                >
-                  {businessData.phoneNumber}
-                </p>
-              )}
-            </div>
-          )}
-
-          {showBackground && (
-            <section
-              className="h-[60vh] bg-fixed bg-cover bg-center flex items-center justify-center"
-              style={{
-                backgroundImage: businessData?.photos[2]
-                  ? `url(${businessData.photos[2]})`
-                  : 'none',
-              }}
-            >
-              <div className="text-white text-center bg-black bg-opacity-50 p-8 rounded-lg">
-                <h2 className="text-4xl font-bold">Welcome to Our Business</h2>
-                <p className="text-xl mt-4">
-                  Scroll to see more about {businessData.companyName || "our offerings"}!
-                </p>
-                <div className="mt-4">
-                  <Button
-                    variant="secondary"
-                    onClick={() => handleImageUpload(2)}
-                  >
-                    {businessData?.backgroundImage ? "Change Background" : "Add Background"}
-                  </Button>
-                </div>
+                  );
+                })}
               </div>
-            </section>
-          )}
+            ))}
+          </div>
 
-            <div>
-              <div className="p-5">
-                <DataTableDemo packages={tableData} onSelectPackage={setSelectedPackage}/>
-                <div className="pt-4 rounded-t-lg">
-                  <AddPackage 
-                    addPackage={(newPackage: Package) =>
-                      setTableData((prev) => [...prev, newPackage])
-                    }
-                  />
-                </div>
-              </div>
-                <div className="p-5 ml-10 mr-10">
-                  {/* <ProfileCarousel
-                    photos={businessData?.photos || []} // Pass photos array
-                    numberOfImages={numberOfImages - 2} // Exclude the first two images
-                    setNumberOfImages={setNumberOfImages}
-                    handleImageUpload={handleImageUpload}
-                  /> */}
-                </div>
-            </div>
+          <div className="pl-10 w-auto">
+            <ComponentPalette components={availableComponents} />
+            <CustomizeCard rows={layoutRows} setRows={setLayoutRows} />
+          </div>
         </div>
-        <div className="pl-10 w-auto">
-          <CustomizeCard
-            switches={{
-              showCompanyName,
-              setShowCompanyName,
-              showWhoYouAre,
-              setShowWhoYouAre,
-              showContact,
-              setShowContact,
-              showCompanyDescription,
-              setShowCompanyDescription,
-              showBackground,
-              setShowBackground,
-            }}
-          />
-        </div>
-      </div>
+      </DragDropContext>
     </section>
   );
-}
+};
 
-export default businessOnboarding
+export default BusinessOnboarding;

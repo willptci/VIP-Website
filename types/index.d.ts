@@ -183,3 +183,54 @@ export interface BusinessTimeSlot {
   endTime: string;
   isBooked: boolean;
 }
+
+export interface CustomizeCardProps {
+  switches: {
+    showCompanyName: boolean;
+    setShowCompanyName: (value: boolean) => void;
+    showWhoYouAre: boolean;
+    setShowWhoYouAre: (value: boolean) => void;
+    showContact: boolean;
+    setShowContact: (value: boolean) => void;
+    showCompanyDescription: boolean;
+    setShowCompanyDescription: (value: boolean) => void;
+    showBackground: boolean;
+    setShowBackground: (value: boolean) => void;
+  };
+} 
+
+export type ComponentType =
+  | "photo"
+  | "text"
+  | "profile-picture"
+  | "reviews"
+  | "contact"
+  | "background-photo"
+  | "booking"
+  | "packages";
+
+export interface SectionComponent {
+  id: string;
+  type: ComponentType;
+  content?: string;
+}
+
+export interface Zone {
+  layout: "vertical" | "horizontal";
+  items: SectionComponent[];
+}
+
+export interface RowData {
+  id: string;
+  left: Zone;
+  right: Zone;
+}
+
+export interface SectionComponent {
+  id: string;
+  type: string;
+  value?: string;
+  photoIndex?: number;
+}
+
+type TextComponentType = "companyDescription" | "ownerDescription" | "contact" | "new";
