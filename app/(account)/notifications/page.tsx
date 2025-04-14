@@ -2,7 +2,9 @@ import React from 'react'
 
 const Notifications = () => {
   return (
-    <div>Notifications</div>
+    <div className="flex items-center justify-center w-full mt-40">
+      Feature Coming Soon
+    </div>
   )
 }
 

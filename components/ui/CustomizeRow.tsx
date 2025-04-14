@@ -34,15 +34,15 @@ const Row: React.FC<RowProps> = ({ row, rowIndex, setRows, removeItem }) => {
   };
 
   return (
-    <div className="flex flex-col gap-4 border p-6 rounded-xl bg-white shadow-md">
+    <div className="flex flex-col gap-4 border p-6 rounded-xl bg-white">
 
       <div className="flex flex-col md:flex-row gap-6 items-start justify-center">
         <div className="flex flex-col items-center w-full md:w-1/2">
-          <div className="flex justify-between w-full mb-4">
+          <div className="flex justify-between items-center w-full mb-4">
             <span className="text-sm font-medium">Left Zone</span>
             <Button
               onClick={() => toggleLayout("left")}
-              className="text-xs bg-custom-9"
+              className="text-xs p-2 rounded-full bg-custom-9"
             >
               {row.left.layout}
             </Button>
@@ -61,11 +61,11 @@ const Row: React.FC<RowProps> = ({ row, rowIndex, setRows, removeItem }) => {
         <Separator orientation="vertical" className="self-stretch min-h-[120px] bg-custom-8" />
 
         <div className="flex flex-col items-center w-full md:w-1/2">
-          <div className="flex justify-between w-full mb-4">
+          <div className="flex justify-between items-center w-full mb-4">
             <span className="text-sm font-medium">Right Zone</span>
             <Button
               onClick={() => toggleLayout("right")}
-              className="text-xs bg-custom-9"
+              className="text-xs rounded-full bg-custom-9"
             >
               {row.right.layout}
             </Button>

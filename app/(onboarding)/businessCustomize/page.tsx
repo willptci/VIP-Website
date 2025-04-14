@@ -13,19 +13,29 @@ import { Package, TextComponentType } from "@/types";
 import AddPackage from "@/components/ui/AddPackage";
 import { DragDropContext, DropResult } from "@hello-pangea/dnd";
 import { RowData, SectionComponent } from "@/types";
-import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import TextComponentRenderer from "@/components/ui/TextComponentRenderer";
 
 interface TextComponent extends SectionComponent {
   textType?: TextComponentType;
   textIndex?: number;
+  showDropdown?: boolean;
+}
+
+interface BusinessDataType {
+  companyName?: string;
+  companyDescription?: string;
+  ownerDescription?: string;
+  phoneNumber?: string;
+  photos?: string[];
+  customText?: string[];
+  [key: string]: any;
 }
 
 const BusinessOnboarding = () => {
   const router = useRouter();
   const [authId, setAuthId] = useState<string | null>(null);
-  const [businessData, setBusinessData] = useState<any>({});
+  const [businessData, setBusinessData] = useState<BusinessDataType>({});
   const [loading, setLoading] = useState(true);
   const [tableData, setTableData] = useState<Package[]>([]);
   const setSelectedPackage = React.useState<Package | null>()[1];
@@ -43,8 +53,6 @@ const BusinessOnboarding = () => {
     { id: uuidv4(), type: "reviews" },
     { id: uuidv4(), type: "contact" },
     { id: uuidv4(), type: "background-photo" },
-    { id: uuidv4(), type: "booking" },
-    { id: uuidv4(), type: "packages" },
   ]);
 
   useEffect(() => {
@@ -54,7 +62,11 @@ const BusinessOnboarding = () => {
         setAuthId(user.uid);
         try {
           const data = await fetchBusinessData(user.uid);
-          setBusinessData(data);
+          const mergedData: BusinessDataType = {
+            customText: [],
+            ...data,
+          };
+          setBusinessData(mergedData);
           const packages = await fetchBusinessPackages();
           setTableData(packages);
         } catch (error) {
@@ -70,19 +82,92 @@ const BusinessOnboarding = () => {
     return () => unsubscribe();
   }, [router]);
 
-  const handleUpdateField = async (field: string, value: string) => {
+  useEffect(() => {
+    const handleSetTextType = (e: Event) => {
+      const { componentId, textType, textIndex } = (e as CustomEvent).detail;
+
+      setLayoutRows(prev => {
+        let newIndex = -1;
+        const updatedRows = prev.map(row => {
+          const updatedRow = { ...row };
+          for (const side of ["left", "right"] as const) {
+            updatedRow[side].items = updatedRow[side].items.map(item => {
+              if (item.id === componentId && item.type === "text") {
+                const textItem = item as TextComponent;
+                textItem.textType = textType;
+                textItem.showDropdown = false;
+                if (textType === "new") {
+                  newIndex = (businessData.customText?.length || 0);
+                  textItem.textIndex = newIndex;
+                }
+              }
+              return item;
+            });
+          }
+          return updatedRow;
+        });
+
+        if (textType === "new" && newIndex !== -1) {
+          setBusinessData(prev => {
+            const newCustomText = [...(prev.customText ?? []), ""];
+            void updateBusinessField("customText", JSON.stringify(newCustomText));
+            return { ...prev, customText: newCustomText };
+          });
+        }
+
+        return updatedRows;
+      });
+    };
+
+    window.addEventListener("set-text-type", handleSetTextType);
+    return () => window.removeEventListener("set-text-type", handleSetTextType);
+  }, [businessData.customText]);
+
+  const handleUpdateField = async (field: string, value: any) => {
     try {
       setBusinessData((prev: any) => ({
         ...prev,
         [field]: value,
       }));
-  
-      await updateBusinessField(field, value);
-  
+      await updateBusinessField(field, typeof value === "string" ? value : JSON.stringify(value));
       console.log(`Field "${field}" updated successfully.`);
     } catch (error) {
       console.error(`Error updating field "${field}":`, error);
       alert("Failed to update field. Please try again.");
+    }
+  };
+
+  const renderComponent = (component: SectionComponent) => {
+    switch (component.type) {
+      case "text":
+        return (
+          <TextComponentRenderer
+            component={component as TextComponent}
+            businessData={businessData}
+            updateComponentText={(id, newText) => {
+              setLayoutRows(prev => {
+                const updated = [...prev];
+                for (const row of updated) {
+                  for (const side of ["left", "right"] as const) {
+                    const idx = row[side].items.findIndex(i => i.id === id);
+                    if (idx !== -1) {
+                      row[side].items[idx].value = newText;
+                    }
+                  }
+                }
+                return updated;
+              });
+              if ((component as TextComponent).textType === "new" && typeof (component as TextComponent).textIndex === "number") {
+                const updatedCustomText = [...(businessData.customText ?? [])];
+                updatedCustomText[(component as TextComponent).textIndex!] = newText;
+                handleUpdateField("customText", updatedCustomText);
+              }
+            }}
+            handleUpdateField={handleUpdateField}
+          />
+        );
+      default:
+        return null;
     }
   };
 
@@ -110,244 +195,34 @@ const BusinessOnboarding = () => {
 
   const handleDragEnd = (result: DropResult) => {
     if (!result.destination) return;
-  
-    const [sourceRowIndexStr, sourceZone] = result.source.droppableId.split("-");
-    const [destRowIndexStr, destZone] = result.destination.droppableId.split("-");
-  
-    const sourceRowIndex = parseInt(sourceRowIndexStr);
-    const destRowIndex = parseInt(destRowIndexStr);
-  
-    const sourceZoneKey = sourceZone as "left" | "right";
-    const destZoneKey = destZone as "left" | "right";
-  
-    const updatedRows = [...layoutRows];
-  
-    // Palette ➝ Layout drop
+
+    const [srcRowIdx, srcZone] = result.source.droppableId.split("-");
+    const [destRowIdx, destZone] = result.destination.droppableId.split("-");
+    const updated = [...layoutRows];
+
     if (result.source.droppableId === "palette") {
-      if (
-        isNaN(destRowIndex) ||
-        !["left", "right"].includes(destZoneKey) ||
-        !updatedRows[destRowIndex]
-      ) {
-        console.warn("Invalid palette drop destination", result);
-        return;
-      }
-    
-      const componentFromPalette = availableComponents[result.source.index];
-    
-      // Count how many photos exist to assign unique indices
-      const allUsedPhotoIndices = updatedRows
-        .flatMap((row) => ["left", "right"].flatMap((zone) =>
-          row[zone as "left" | "right"].items
-            .map((item) => item.photoIndex)
-            .filter((i) => typeof i === "number")
-        )) as number[];
-    
-      const nextAvailablePhotoIndex = Math.max(-1, ...allUsedPhotoIndices) + 1;
-    
+      const from = availableComponents[result.source.index];
+      const nextPhotoIndex = Math.max( -1, ...updated.flatMap(r => ["left", "right"].flatMap(k => r[k as "left" | "right"].items.map(i => i.photoIndex ?? -1))
+    )
+  ) + 1;
       const newComponent: SectionComponent = {
         id: uuidv4(),
-        type: componentFromPalette.type,
-        ...(componentFromPalette.type === "text" && {
-          textType: undefined,
-          value: "",
-        }),
-        ...(["photo", "profile-picture", "background-photo"].includes(componentFromPalette.type) && {
-          photoIndex: nextAvailablePhotoIndex,
-        }),
+        type: from.type,
+        ...(from.type === "text" && { textType: undefined, showDropdown: true, value: "" }),
+        ...(["photo", "profile-picture", "background-photo"].includes(from.type) && { photoIndex: nextPhotoIndex })
       };
-    
-      const destItems = [...updatedRows[destRowIndex][destZoneKey].items];
-      destItems.splice(result.destination.index, 0, newComponent);
-    
-      updatedRows[destRowIndex][destZoneKey].items = destItems;
-      setLayoutRows(updatedRows);
+      updated[parseInt(destRowIdx)][destZone as "left" | "right"].items.splice(result.destination.index, 0, newComponent);
+      setLayoutRows(updated);
+      return;
+    }
 
-      if (componentFromPalette.type === "text") {
-        const selectTextType = async () => {
-          const anchor = document.querySelector(`[data-id="${newComponent.id}"]`);
-          const textType = await showTextTypeDropdown(anchor as HTMLElement);
-          if (textType === "new") {
-            const maxIndex = Math.max(
-              -1,
-              ...layoutRows.flatMap(row =>
-                [...row.left.items, ...row.right.items]
-                  .filter(item => item.type === "text" && (item as TextComponent).textIndex !== undefined)
-                  .map(item => (item as TextComponent).textIndex ?? 0)
-              )
-            );
-            
-            updateComponentTextType(newComponent.id, "new", maxIndex + 1);
-          } else {
-            updateComponentTextType(newComponent.id, textType);
-          }
-        };
-        selectTextType();
-      }
-      return;
-    }
-  
-    // Validate regular zone drops
-    if (
-      isNaN(sourceRowIndex) || isNaN(destRowIndex) ||
-      !["left", "right"].includes(sourceZoneKey) ||
-      !["left", "right"].includes(destZoneKey) ||
-      !updatedRows[sourceRowIndex] ||
-      !updatedRows[destRowIndex]
-    ) {
-      console.warn("Invalid layout drag result", result);
-      return;
-    }
-  
-    // Same zone move
-    if (sourceRowIndex === destRowIndex && sourceZoneKey === destZoneKey) {
-      const items = [...updatedRows[sourceRowIndex][sourceZoneKey].items];
-      const [moved] = items.splice(result.source.index, 1);
-      items.splice(result.destination.index, 0, moved);
-  
-      updatedRows[sourceRowIndex][sourceZoneKey].items = items;
-      setLayoutRows(updatedRows);
-      return;
-    }
-  
-    // Cross-zone move
-    const sourceItems = [...updatedRows[sourceRowIndex][sourceZoneKey].items];
-    const destItems = [...updatedRows[destRowIndex][destZoneKey].items];
-  
+    const sourceItems = [...updated[parseInt(srcRowIdx)][srcZone as "left" | "right"].items];
+    const destItems = [...updated[parseInt(destRowIdx)][destZone as "left" | "right"].items];
     const [moved] = sourceItems.splice(result.source.index, 1);
     destItems.splice(result.destination.index, 0, moved);
-  
-    updatedRows[sourceRowIndex][sourceZoneKey].items = sourceItems;
-    updatedRows[destRowIndex][destZoneKey].items = destItems;
-  
-    setLayoutRows(updatedRows);
-  };  
-
-  const showTextTypeDropdown = (anchorEl?: HTMLElement) => {
-    return new Promise<TextComponentType>((resolve) => {
-      const dropdown = document.createElement("select");
-      dropdown.className = "absolute z-50 bg-white border rounded shadow text-sm px-2 py-1";
-      
-      const options = [
-        { value: "companyDescription", label: "Company Description" },
-        { value: "ownerDescription", label: "Owner Description" },
-        { value: "contact", label: "Contact" },
-        { value: "new", label: "New Text" },
-      ];
-  
-      options.forEach(option => {
-        const opt = document.createElement("option");
-        opt.value = option.value;
-        opt.textContent = option.label;
-        dropdown.appendChild(opt);
-      });
-  
-      dropdown.onchange = () => {
-        document.body.removeChild(dropdown);
-        resolve(dropdown.value as TextComponentType);
-      };
-  
-      document.body.appendChild(dropdown);
-  
-      if (anchorEl) {
-        const rect = anchorEl.getBoundingClientRect();
-        dropdown.style.position = "absolute";
-        dropdown.style.top = `${rect.bottom + window.scrollY}px`;
-        dropdown.style.left = `${rect.left + window.scrollX}px`;
-      }
-    });
-  };
-
-  const updateComponentTextType = (componentId: string, textType: TextComponentType, textIndex?: number) => {
-    setLayoutRows(prev => {
-      const newRows = [...prev];
-      for (const row of newRows) {
-        for (const side of ["left", "right"] as const) {
-          const item = row[side].items.find(i => i.id === componentId);
-          if (item && item.type === "text") {
-            const textItem = item as TextComponent;
-            textItem.textType = textType;
-            if (textIndex !== undefined) {
-              textItem.textIndex = textIndex;
-            }
-            break;
-          }
-        }
-      }
-      return newRows;
-    });
-  };
-
-  const renderComponent = (component: SectionComponent) => {
-    switch (component.type) {
-      case "photo":
-        const photoIndex = component.photoIndex ?? 0;
-        return businessData.photos?.[photoIndex] ? (
-          <div
-            className="relative border shadow w-[150px] h-36 rounded-xl bg-cover bg-center"
-            style={{ backgroundImage: `url(${businessData.photos[photoIndex]})` }}
-          >
-            <Button
-              variant="secondary"
-              className="absolute top-1 right-1 p-1 w-6 h-6 rounded-full flex items-center justify-center"
-              onClick={() => handleImageUpload(photoIndex)}
-            >
-              <Plus />
-            </Button>
-          </div>
-        ) : (
-          <Button onClick={() => handleImageUpload(photoIndex)}>
-            <Plus /> Add Image
-          </Button>
-        );
-  
-      case "text":
-        const textComp = component as TextComponent;
-        return (
-          <TextComponentRenderer
-            component={textComp}
-            businessData={businessData}
-            updateComponentText={(id, newText) => {
-              const updatedRows = [...layoutRows];
-              for (const row of updatedRows) {
-                for (const side of ["left", "right"] as const) {
-                  const index = row[side].items.findIndex(i => i.id === id);
-                  if (index !== -1) {
-                    row[side].items[index].value = newText;
-                    break;
-                  }
-                }
-              }
-              setLayoutRows(updatedRows);
-            }}
-            handleUpdateField={handleUpdateField}
-          />
-        );
-  
-      case "contact":
-        return (
-          <div className="flex gap-2 items-center">
-            <p className="font-medium">Contact:</p>
-            <Input
-              type="text"
-              value={businessData.phoneNumber}
-              onChange={(e) => handleUpdateField("phoneNumber", e.target.value)}
-              className="w-48"
-            />
-          </div>
-        );
-  
-      case "packages":
-        return (
-          <div className="bg-white shadow p-4 rounded-md">
-            <DataTableDemo packages={tableData} onSelectPackage={setSelectedPackage} />
-            <AddPackage addPackage={(pkg) => setTableData((prev) => [...prev, pkg])} />
-          </div>
-        );
-  
-      default:
-        return null;
-    }
+    updated[parseInt(srcRowIdx)][srcZone as "left" | "right"].items = sourceItems;
+    updated[parseInt(destRowIdx)][destZone as "left" | "right"].items = destItems;
+    setLayoutRows(updated);
   };
 
   if (loading) return <div>Loading...</div>;
@@ -360,22 +235,28 @@ const BusinessOnboarding = () => {
 
       <DragDropContext onDragEnd={handleDragEnd}>
         <div className="flex">
-
           <div className="flex-col rounded-xl border p-10 shadow w-4/6 bg-white">
+            {businessData.companyName && (
+              <h2 className="text-2xl font-bold text-center mb-6">{businessData.companyName}</h2>
+            )}
+
             {layoutRows.map((row, rowIndex) => (
               <div key={row.id} className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
-                {["left", "right"].map((zoneKey) => {
-                  const zone = row[zoneKey as "left" | "right"];
-                  return (
-                    <div key={zoneKey} className={`flex ${zone.layout === "horizontal" ? "flex-row" : "flex-col"} gap-4`}>
-                      {zone.items.map((item) => (
-                        <div key={item.id}>{renderComponent(item)}</div>
-                      ))}
-                    </div>
-                  );
-                })}
+                {["left", "right"].map((zoneKey) => (
+                  <div key={zoneKey} className={`flex ${row[zoneKey as "left" | "right"].layout === "horizontal" ? "flex-row" : "flex-col"} gap-4`}>
+                    {row[zoneKey as "left" | "right"].items.map((item) => (
+                      <div key={item.id}>{renderComponent(item)}</div>
+                    ))}
+                  </div>
+                ))}
               </div>
             ))}
+
+            <div className="mt-10">
+              <h2 className="text-xl font-semibold mb-2">Available Packages</h2>
+              <DataTableDemo packages={tableData} onSelectPackage={setSelectedPackage} />
+              <AddPackage addPackage={(pkg) => setTableData((prev) => [...prev, pkg])} />
+            </div>
           </div>
 
           <div className="pl-10 w-auto">

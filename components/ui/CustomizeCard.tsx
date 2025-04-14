@@ -39,18 +39,20 @@ const CustomizeCard: React.FC<CustomizeCardProps> = ({ rows, setRows }) => {
   return (
     <Card className="bg-white">
       <CardHeader>
-        <CardTitle>Customize</CardTitle>
-        <CardDescription>
-          Drag and drop components between rows. Each row has left and right zones.
-        </CardDescription>
-        <div className="">
+        <div className="flex justify-between items-start">
+          <div>
+            <CardTitle>Customize</CardTitle>
+            <CardDescription>
+              Drag and drop components.
+            </CardDescription>
+          </div>
           <Button onClick={addRow} className="text-sm mt-2 bg-custom-9">
             + Add Row
           </Button>
         </div>
       </CardHeader>
       <CardContent>
-        <div className="space-y-4">
+        <div className="space-y-2">
           {rows.map((row, rowIndex) => (
             <Row
               key={row.id}
