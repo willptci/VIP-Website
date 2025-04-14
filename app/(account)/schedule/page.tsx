@@ -193,7 +193,7 @@ const SchedulePage = () => {
             bookingsPerDay={Object.fromEntries(Object.entries(bookings).map(([date, list]) => [date, list.length]))}
           />
           <div className="pl-8 flex gap-10">
-            <NewBookingsCollapsible />
+            {/* <NewBookingsCollapsible /> */}
             <EditHours onScheduleUpdate={handleScheduleUpdate}/>
           </div>
         </div>

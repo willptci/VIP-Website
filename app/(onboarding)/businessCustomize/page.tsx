@@ -11,6 +11,7 @@ import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { Package } from "@/types";
 import { Textarea } from "@/components/ui/textarea";
 import AddPackage from "@/components/ui/AddPackage";
+import { toast } from "sonner"
 
 const BusinessOnboarding = () => {
   const [showCompanyName, setShowCompanyName] = useState(true);
@@ -127,8 +128,31 @@ const BusinessOnboarding = () => {
     fileInput.click();
   };
 
+
   const navigateToHome = async () => {
     try {
+
+      if (showCompanyDescription && !businessData.photos?.[0]) {
+        toast("Missing Required Image", {
+          description: "Please upload a photo for the Company Description section.",
+        });
+        return;
+      }
+
+      if (showWhoYouAre && !businessData.photos?.[1]) {
+        toast("Missing Required Image", {
+          description: "Please upload a photo for the Company Description section.",
+        });
+        return;
+      }
+
+      if (showBackground && !businessData.photos?.[2]) {
+        toast("Missing Required Image", {
+          description: "Please upload a photo for the Company Description section.",
+        });
+        return;
+      }
+
       const settings = {
         showCompanyName,
         showCompanyDescription,
@@ -136,15 +160,16 @@ const BusinessOnboarding = () => {
         showContact,
         showBackground,
       };
-  
+
       await saveSettings(settings);
-  
       router.push("/");
     } catch (error) {
-      console.error("Error saving settings:", error);
-      alert("Failed to save settings. Please try again.");
+      toast("Save Failed", {
+        description: "Please try again later.",
+      });
     }
   };
+
 
   if (loading) {
     return <div>Loading...</div>;
@@ -366,11 +391,11 @@ const BusinessOnboarding = () => {
             </div>
           )}
 
-          {showBackground && businessData?.photos?.[2] && (
+          {showBackground && (
             <section
-              className="h-[60vh] bg-fixed bg-cover bg-center flex items-center justify-center"
+              className="h-[60vh] bg-fixed bg-cover bg-center flex items-center justify-center bg-slate-300"
               style={{
-                backgroundImage: businessData?.photos[2]
+                backgroundImage: businessData?.photos?.[2]
                   ? `url(${businessData.photos[2]})`
                   : 'none',
               }}
@@ -385,7 +410,7 @@ const BusinessOnboarding = () => {
                     variant="secondary"
                     onClick={() => handleImageUpload(2)}
                   >
-                    {businessData?.backgroundImage ? "Change Background" : "Add Background"}
+                    {businessData?.photos?.[2] ? "Change Background" : "Add Background"}
                   </Button>
                 </div>
               </div>

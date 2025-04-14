@@ -28,6 +28,7 @@ const AddPackage: React.FC<NewPackageProps>  = ({ addPackage }) => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [status, setStatus] = useState(true);
     const [photos, setPhotos] = useState<string[]>([]);
+    const [open, setOpen] = useState(false);
 
     const formSchema = packageFormSchema();
 
@@ -80,17 +81,25 @@ const AddPackage: React.FC<NewPackageProps>  = ({ addPackage }) => {
     
             await addPackageToFirestore(packageData);
             addPackage(packageData);
-            alert("Package successfully added!");
         } catch (error: any) {
             setCreatePackageError(error.message || "An error occurred");
             console.error("Failed to create business:", error);
         } finally {
-            
+            setIsSubmitting(false);
+            setOpen(false);
         }
     };  
 
     return (
-        <Drawer>
+        <Drawer open={open} onOpenChange={(isOpen) => {
+            setOpen(isOpen);
+            if (isOpen) {
+              form.reset();
+              setPhotos([]);
+              setStatus(true);
+              setCreatePackageError(null);
+            }
+          }}>
             <DrawerTrigger asChild>
                 <Button variant="outline" className="flex">
                     <Plus/>
