@@ -1,0 +1,176 @@
+.
+├── README.md
+├── app
+│   ├── (account)
+│   │   ├── cancelOrRefund
+│   │   ├── layout.tsx
+│   │   ├── notifications
+│   │   ├── payment
+│   │   ├── profile
+│   │   ├── rateExperience
+│   │   ├── schedule
+│   │   ├── security
+│   │   ├── trips
+│   │   └── upcomingTrips
+│   ├── (auth)
+│   │   ├── layout.tsx
+│   │   ├── sign-in
+│   │   └── sign-up
+│   ├── (onboarding)
+│   │   ├── businessCustomize
+│   │   ├── businessSetUp
+│   │   ├── layout.tsx
+│   │   └── userSetUp
+│   ├── (root)
+│   │   ├── about
+│   │   ├── company
+│   │   ├── confirm-purchase
+│   │   ├── layout.tsx
+│   │   ├── page.tsx
+│   │   └── purchases
+│   ├── globals.css
+│   └── layout.tsx
+├── components
+│   ├── NavBar.tsx
+│   ├── Navbar.module.css
+│   ├── client
+│   │   └── BusinessPageClient.tsx
+│   └── ui
+│       ├── AddPackage.tsx
+│       ├── AddPackageCarousel.tsx
+│       ├── AuthForm.tsx
+│       ├── BookNowCard.tsx
+│       ├── BookingsList.tsx
+│       ├── BusinessCalendar.tsx
+│       ├── BusinessProfilePage.tsx
+│       ├── CompanyProfileBox.tsx
+│       ├── CustomBusinessInput.tsx
+│       ├── CustomInput.tsx
+│       ├── CustomizeCard.tsx
+│       ├── DaySchedule.tsx
+│       ├── EditHours.tsx
+│       ├── NewBookingsCollapsible.tsx
+│       ├── NumberSlider.tsx
+│       ├── PackageTable.tsx
+│       ├── PrevBookingsList.tsx
+│       ├── PrevTripsList.tsx
+│       ├── ProfileComponent.tsx
+│       ├── ProfileNav.tsx
+│       ├── ShowReviews.tsx
+│       ├── ShowcasePhotoCarousel.tsx
+│       ├── SignInPrompt.tsx
+│       ├── TableDropDown.tsx
+│       ├── TripsList.tsx
+│       ├── UserProfilePage.tsx
+│       ├── alert-dialog.tsx
+│       ├── avatar.tsx
+│       ├── button.tsx
+│       ├── calendar.tsx
+│       ├── card.tsx
+│       ├── carousel.tsx
+│       ├── checkbox.tsx
+│       ├── collapsible.tsx
+│       ├── command.tsx
+│       ├── dialog.tsx
+│       ├── drawer.tsx
+│       ├── form.tsx
+│       ├── input.tsx
+│       ├── label.tsx
+│       ├── navigation-menu.tsx
+│       ├── pagination.tsx
+│       ├── popover.tsx
+│       ├── radio-group.tsx
+│       ├── select.tsx
+│       ├── semiCircleNav.tsx
+│       ├── separator.tsx
+│       ├── slider.tsx
+│       ├── sonner.tsx
+│       ├── switch.tsx
+│       ├── table.tsx
+│       ├── tabs.tsx
+│       ├── textarea.tsx
+│       ├── toast.tsx
+│       ├── toaster.tsx
+│       └── toggle.tsx
+├── components.json
+├── constants
+│   └── index.ts
+├── firebase
+│   └── firebaseConfig.ts
+├── hooks
+│   └── use-toast.ts
+├── lib
+│   ├── actions
+│   │   ├── business.actions.ts
+│   │   └── user.actions.ts
+│   └── utils.ts
+├── my-dashboard-app
+│   └── next-env.d.ts
+├── next-env.d.ts
+├── next.config.mjs
+├── package-lock.json
+├── package.json
+├── postcss.config.mjs
+├── project-structure.txt
+├── public
+│   ├── companyExamples
+│   │   ├── Andros-1.jpg
+│   │   ├── Andros-2.jpg
+│   │   ├── Andros-3.jpg
+│   │   ├── Andros-4.jpg
+│   │   ├── Andros-5.jpg
+│   │   ├── Andros-6.jpg
+│   │   └── Andros-7.jpg
+│   ├── fonts
+│   │   ├── Syne-Bold.ttf
+│   │   ├── Syne-ExtraBold.ttf
+│   │   ├── Syne-Medium.ttf
+│   │   ├── Syne-Regular.ttf
+│   │   └── Syne-SemiBold.ttf
+│   ├── icons
+│   │   ├── Lines.svg
+│   │   ├── arrow-left.svg
+│   │   ├── arrow-right.svg
+│   │   ├── arrow-up.svg
+│   │   ├── bonefish.svg
+│   │   ├── credit-card.svg
+│   │   ├── default_img.png
+│   │   ├── dollar-circle.svg
+│   │   ├── dollar.svg
+│   │   ├── edit.png
+│   │   ├── filter-lines.svg
+│   │   ├── google.svg
+│   │   ├── gradient-mesh.svg
+│   │   ├── hamburger.svg
+│   │   ├── home.svg
+│   │   ├── lines.png
+│   │   ├── loader.svg
+│   │   ├── logout.svg
+│   │   ├── mastercard.svg
+│   │   ├── money-send.svg
+│   │   ├── payment-transfer.svg
+│   │   ├── plus.svg
+│   │   ├── search.svg
+│   │   ├── stripe.svg
+│   │   ├── transaction.svg
+│   │   ├── user.svg
+│   │   └── visa.svg
+│   ├── images
+│   │   ├── Andros Logo.png
+│   │   ├── default-image.jpg
+│   │   ├── local.jpg
+│   │   ├── snorkel.jpg
+│   │   └── turtle.jpg
+│   └── tempBackgrounds
+│       ├── Andros-auth-background.jpeg
+│       ├── Andros-auth-bg.jpg
+│       └── Andros-bg.jpg
+├── state
+│   ├── AuthProvider.tsx
+│   └── authState.ts
+├── tailwind.config.ts
+├── tsconfig.json
+└── types
+    └── index.d.ts
+
+41 directories, 133 files

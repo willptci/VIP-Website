@@ -893,3 +893,43 @@ export const fetchTopReviews = async (businessId: string) => {
     return [];
   }
 };
+
+//gabby - dashboard
+export const fetchBusinessInsights = async () => {
+  const auth = getAuth();
+  const currentUser = auth.currentUser;
+
+  if (!currentUser) {
+    throw new Error("User not authenticated.");
+  }
+
+  const businessId = currentUser.uid;
+  const businessRef = doc(db, "businesses", businessId);
+  const businessSnap = await getDoc(businessRef);
+
+  if (!businessSnap.exists()) {
+    throw new Error("Business not found.");
+  }
+
+  const businessData = businessSnap.data();
+  const bookings = Array.isArray(businessData.upcomingBookings)
+    ? businessData.upcomingBookings
+    : [];
+  const reviews = Array.isArray(businessData.reviews) ? businessData.reviews : [];
+
+  const totalRevenue = bookings.reduce((sum, booking) => sum + (booking.totalPrice || 0), 0);
+  const averageRating =
+    reviews.length > 0
+      ? reviews.reduce((sum, r) => sum + (r.rating || 0), 0) / reviews.length
+      : null;
+
+  return {
+    companyName: businessData.companyName,
+    businessEmail: businessData.businessEmail,
+    totalBookings: bookings.length,
+    totalRevenue,
+    averageRating,
+    bookings,
+    reviews,
+  };
+};
