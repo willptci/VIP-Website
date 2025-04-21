@@ -6,7 +6,6 @@ import defaultImage from '/public/icons/default_img.png';
 
 interface CompanyProfileBoxProps {
   businessId: string
-  businessProduct: string;
   businessName: string;
   firstName: string;
   lastName: string;
@@ -15,7 +14,6 @@ interface CompanyProfileBoxProps {
 
 const CompanyProfileBox = ({
   businessId,
-  businessProduct,
   businessName,
   firstName,
   lastName,
@@ -43,14 +41,13 @@ const CompanyProfileBox = ({
             height={1000}
           />
         </div>
-        <div className="flex flex-col justify-between p-3">
+        <div className="flex flex-col justify-between p-3 pt-5">
           <div className="flex flex-wrap items-center">
             <h3 className="text-3xl overflow-hidden whitespace-nowrap font-semibold text-ellipsis max-w-full">
               {businessName}
             </h3>
           </div>
           <div className="flex-col mt-2">
-            <p className="text-lg font-normal p-0.5">{businessProduct}</p>
             <p className= "font-normal text-custom-8 p-0.5 text-md">
               With {firstName + ' ' + lastName}
             </p>

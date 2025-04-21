@@ -84,7 +84,6 @@ const Home = () => {
             <CompanyProfileBox
               key={company.$id}
               businessId={company.$id}
-              businessProduct="Fishing Day Trips"
               businessName={company.companyName || "Unknown Business"}
               firstName={company.firstName || "Unknown"}
               lastName={company.lastName || "Unknown"}
