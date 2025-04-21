@@ -12,7 +12,15 @@ const TripsList = () => {
     const loadTrips = async () => {
       try {
         const tripsData = await fetchUserUpcomingTrips();
-        setTrips(tripsData);
+
+        const now = new Date();
+
+        const upcoming = tripsData.filter((trip: any) => {
+          const tripDateTime = new Date(`${trip.date}T${trip.time}`);
+          return tripDateTime > now;
+        });
+
+        setTrips(upcoming);
       } catch (error) {
         console.error("Error fetching trips:", error);
       } finally {

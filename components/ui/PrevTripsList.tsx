@@ -21,7 +21,16 @@ const PrevTripsList = () => {
     const loadTrips = async () => {
       try {
         const tripsData = await fetchUserPastTrips();
-        setTrips(tripsData);
+        
+        const now = new Date();
+
+        const pastTrips = tripsData.filter((trip: any) => {
+          const tripDateTime = new Date(`${trip.date}T${trip.time}`);
+          return tripDateTime < now;
+        });
+
+        setTrips(pastTrips);
+
       } catch (error) {
         console.error("Error fetching trips:", error);
       } finally {

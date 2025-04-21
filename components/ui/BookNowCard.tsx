@@ -84,22 +84,30 @@ export function BookNowCard({
     const fetchScheduleForDay = async (date: Date) => {
         const schedule = await fetchBusinessSchedule();
         const dayKey = date.toLocaleDateString("en-US", { weekday: "long" }).toLowerCase();
-
-        const openHours = schedule.openHours.find((oh) => oh.selectedDays.includes(dayKey));
-        const fixedSlots = schedule.fixedSlots.find((fs) => fs.selectedDays.includes(dayKey));
-
-        if (openHours) {
-            setAvailableTimes(generateAvailableSlots(openHours.start, openHours.end, openHours.unavailableTimes));
-        } else if (fixedSlots) {
-            setAvailableTimes(
-            fixedSlots.blockedSlots.flatMap((slot) =>
-                generateAvailableSlots(slot.start, slot.end, [])
+      
+        const openHoursEntries = schedule.openHours.filter((oh) =>
+          oh.selectedDays.includes(dayKey)
+        );
+        const fixedSlotsEntries = schedule.fixedSlots.filter((fs) =>
+          fs.selectedDays.includes(dayKey)
+        );
+      
+        if (openHoursEntries.length > 0) {
+          const allOpenTimes = openHoursEntries.flatMap((oh) =>
+            generateAvailableSlots(oh.start, oh.end, oh.unavailableTimes)
+          );
+          setAvailableTimes(allOpenTimes);
+        } else if (fixedSlotsEntries.length > 0) {
+          const allFixedTimes = fixedSlotsEntries.flatMap((fs) =>
+            fs.blockedSlots.flatMap((slot) =>
+              generateAvailableSlots(slot.start, slot.end, [])
             )
-            );
+          );
+          setAvailableTimes(allFixedTimes);
         } else {
-            setAvailableTimes([]);
+          setAvailableTimes([]);
         }
-    };
+      };      
 
     const generateAvailableSlots = (
         start: string,

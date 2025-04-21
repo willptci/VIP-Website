@@ -12,7 +12,16 @@ const PrevBookingsList = () => {
     const loadBookings = async () => {
       try {
         const bookingsData = await fetchBusinessPastBookings();
-        setPastBookings(bookingsData);
+        
+        const now = new Date();
+
+        const pastOnly = bookingsData.filter((booking: any) => {
+          const bookingDateTime = new Date(`${booking.date}T${booking.time}`);
+          return bookingDateTime < now;
+        });
+
+        setPastBookings(pastOnly);
+
       } catch (error) {
         console.error("Error fetching past bookings:", error);
       } finally {

@@ -12,7 +12,16 @@ const BookingsList = () => {
     const loadBookings = async () => {
       try {
         const bookingsData = await fetchBusinessUpcomingBookings();
-        setBookings(bookingsData);
+        
+        const now = new Date();
+
+        const upcoming = bookingsData.filter((booking: any) => {
+          const bookingDateTime = new Date(`${booking.date}T${booking.time}`);
+          return bookingDateTime > now;
+        });
+
+        setBookings(upcoming);
+
       } catch (error) {
         console.error("Error fetching bookings:", error);
       } finally {
