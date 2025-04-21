@@ -31,13 +31,6 @@ const daysOfWeek = [
   { label: "Su", value: "sunday" },
 ]
 
-const availablePackages = [
-  { value: "package_a", label: "Package A" },
-  { value: "package_b", label: "Package B" },
-  { value: "package_c", label: "Package C" },
-  { value: "package_d", label: "Package D" },
-]
-
 const PackageSelectionDialog = ({
   selectedPackages,
   onChange,
