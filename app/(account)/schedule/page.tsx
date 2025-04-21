@@ -173,7 +173,9 @@ const SchedulePage = () => {
     ? schedule.fixedSlots.find((fs) => fs.selectedDays.includes(dayName ?? ""))
     : null;
 
-  const unavailableTimes = openHoursForDay ? openHoursForDay.unavailableTimes : [];
+  // const unavailableTimes = openHoursForDay ? openHoursForDay.unavailableTimes : [];
+
+  const unavailableTimes = openHoursForDay?.unavailableTimes ?? [];
 
   const timeSlots = openHoursForDay
     ? [{ start: openHoursForDay.start, end: openHoursForDay.end }]

@@ -461,11 +461,121 @@ export const fetchShowcasingBusinessPackages = async (
 //   }
 // }
 
+// export const saveOpenHours = async (
+//   openSelectedDays: string[],
+//   openHours: { start: string; end: string },
+//   unavailableTimes: { start: string; end: string }[]
+// ) => {
+//   const auth = getAuth();
+//   const currentUser = auth.currentUser;
+
+//   if (!currentUser) {
+//     console.error("❌ No authenticated user");
+//     throw new Error("User is not authenticated. Unable to save schedule.");
+//   }
+
+//   const businessId = currentUser.uid;
+//   const docRef = doc(db, "businesses", businessId);
+
+//   try {
+//     const docSnap = await getDoc(docRef);
+//     let existingData = docSnap.exists() ? docSnap.data() : { openHours: [], fixedSlots: [] };
+
+//     const normalize = (days: string[]) => [...days].sort().join(",");
+//     const newOpenNormalized = normalize(openSelectedDays);
+
+//     console.log("📋 Current open hours in Firestore:", existingData.openHours);
+//     console.log("🆕 New open hour days (normalized):", newOpenNormalized);
+
+//     const updatedOpenHours = existingData.openHours.filter(
+//       (schedule: any) => normalize(schedule.selectedDays) !== newOpenNormalized
+//     );
+
+//     console.log("🧹 Filtered open hours (excluding overwrite):", updatedOpenHours);
+
+//     const updatedFixedSlots = existingData.fixedSlots.filter(
+//       (slot: any) => normalize(slot.selectedDays) !== newOpenNormalized
+//     );
+
+//     // Add the new open hours
+//     updatedOpenHours.push({
+//       selectedDays: openSelectedDays,
+//       start: openHours.start,
+//       end: openHours.end,
+//       unavailableTimes,
+//     });
+
+//     console.log("✅ Final open hours to save:", updatedOpenHours);
+
+//     // Save to Firestore
+//     await setDoc(docRef, { openHours: updatedOpenHours, fixedSlots: updatedFixedSlots }, { merge: true });
+
+//   } catch (error) {
+//     console.error("Error saving open hours:", error);
+//   }
+// };
+
+// export const saveFixedSlots = async (
+//   fixedSelectedDays: string[],
+//   fixedBlockedTimes: { start: string; end: string; allowedPackages: string[] }[]
+// ) => {
+//   const auth = getAuth();
+//   const currentUser = auth.currentUser;
+
+//   if (!currentUser) {
+//     console.error("❌ No authenticated user");
+//     throw new Error("User is not authenticated. Unable to save schedule.");
+//   }
+
+//   const businessId = currentUser.uid;
+//   const docRef = doc(db, "businesses", businessId);
+
+//   try {
+//     const docSnap = await getDoc(docRef);
+//     let existingData = docSnap.exists() ? docSnap.data() : { openHours: [], fixedSlots: [] };
+
+//     const normalize = (days: string[]) => [...days].sort().join(",");
+//     const newFixedNormalized = normalize(fixedSelectedDays);
+
+//     console.log("📋 Current fixed slots in Firestore:", existingData.fixedSlots);
+//     console.log("🆕 New fixed slot days (normalized):", newFixedNormalized);
+
+//     const updatedFixedSlots = existingData.fixedSlots.filter(
+//       (slot: any) => normalize(slot.selectedDays) !== newFixedNormalized
+//     );
+
+//     console.log("🧹 Filtered fixed slots (excluding overwrite):", updatedFixedSlots);
+
+//     const updatedOpenHours = existingData.openHours.filter(
+//       (schedule: any) => normalize(schedule.selectedDays) !== newFixedNormalized
+//     );
+
+//     // Add the new fixed slots
+//     updatedFixedSlots.push({
+//       selectedDays: fixedSelectedDays,
+//       blockedSlots: fixedBlockedTimes,
+//     });
+
+//     console.log("✅ Final fixed slots to save:", updatedFixedSlots);
+
+//     // Save to Firestore
+//     await setDoc(docRef, { fixedSlots: updatedFixedSlots, openHours: updatedOpenHours }, { merge: true });
+
+//   } catch (error) {
+//     console.error("Error saving fixed slots:", error);
+//   }
+// };
+
 export const saveOpenHours = async (
   openSelectedDays: string[],
   openHours: { start: string; end: string },
   unavailableTimes: { start: string; end: string }[]
 ) => {
+  console.log("✅ saveOpenHours called!");
+  console.log("📅 Selected days to save:", openSelectedDays);
+  console.log("⏱️ Time range:", openHours);
+  console.log("❌ Unavailable times:", unavailableTimes);
+
   const auth = getAuth();
   const currentUser = auth.currentUser;
 
@@ -478,29 +588,43 @@ export const saveOpenHours = async (
 
   try {
     const docSnap = await getDoc(docRef);
-    let existingData = docSnap.exists() ? docSnap.data() : { openHours: [], fixedSlots: [] };
+    const rawData = docSnap.exists() ? docSnap.data() : {};
 
-    // 🔹 Remove conflicting days from BOTH openHours and fixedSlots
+    const existingData = {
+      openHours: Array.isArray(rawData.openHours) ? rawData.openHours : [],
+      fixedSlots: Array.isArray(rawData.fixedSlots) ? rawData.fixedSlots : [],
+    };
+
+    console.log("📂 Existing openHours before filtering:", existingData.openHours);
+    console.log("📂 Existing fixedSlots before filtering:", existingData.fixedSlots);
+
     const updatedOpenHours = existingData.openHours.filter(
-      (schedule: any) => !openSelectedDays.some(day => schedule.selectedDays.includes(day))
+      (schedule: any) => !schedule.selectedDays.some((d: string) => openSelectedDays.includes(d))
     );
     const updatedFixedSlots = existingData.fixedSlots.filter(
-      (slot: any) => !openSelectedDays.some(day => slot.selectedDays.includes(day))
+      (slot: any) => !slot.selectedDays.some((d: string) => openSelectedDays.includes(d))
     );
 
-    // 🔹 Add the new open hours
-    updatedOpenHours.push({
-      selectedDays: openSelectedDays,
-      start: openHours.start,
-      end: openHours.end,
-      unavailableTimes,
+    openSelectedDays.forEach((day) => {
+      updatedOpenHours.push({
+        selectedDays: [day],
+        start: openHours.start,
+        end: openHours.end,
+        unavailableTimes,
+      });
     });
 
-    // 🔹 Save to Firestore
-    await setDoc(docRef, { openHours: updatedOpenHours, fixedSlots: updatedFixedSlots }, { merge: true });
+    console.log("📋 New openHours after update:", updatedOpenHours);
+    console.log("🧹 New fixedSlots after filtering:", updatedFixedSlots);
 
+    await setDoc(docRef, {
+      openHours: updatedOpenHours,
+      fixedSlots: updatedFixedSlots, // ensure conflicting fixedSlots are removed
+    }, { merge: true });
+
+    console.log("✅ Successfully saved openHours.");
   } catch (error) {
-    console.error("Error saving open hours:", error);
+    console.error("❌ Error saving open hours:", error);
   }
 };
 
@@ -508,6 +632,10 @@ export const saveFixedSlots = async (
   fixedSelectedDays: string[],
   fixedBlockedTimes: { start: string; end: string; allowedPackages: string[] }[]
 ) => {
+  console.log("✅ saveFixedSlots called!");
+  console.log("📆 Selected days to save:", fixedSelectedDays);
+  console.log("⏰ Blocked times to save:", fixedBlockedTimes);
+
   const auth = getAuth();
   const currentUser = auth.currentUser;
 
@@ -520,27 +648,41 @@ export const saveFixedSlots = async (
 
   try {
     const docSnap = await getDoc(docRef);
-    let existingData = docSnap.exists() ? docSnap.data() : { openHours: [], fixedSlots: [] };
+    const rawData = docSnap.exists() ? docSnap.data() : {};
 
-    // 🔹 Remove conflicting days from BOTH fixedSlots and openHours
+    const existingData = {
+      openHours: Array.isArray(rawData.openHours) ? rawData.openHours : [],
+      fixedSlots: Array.isArray(rawData.fixedSlots) ? rawData.fixedSlots : [],
+    };
+
+    console.log("📂 Existing fixedSlots before filtering:", existingData.fixedSlots);
+    console.log("📂 Existing openHours before filtering:", existingData.openHours);
+
     const updatedFixedSlots = existingData.fixedSlots.filter(
-      (slot: any) => !fixedSelectedDays.some(day => slot.selectedDays.includes(day))
+      (slot: any) => !slot.selectedDays.some((d: string) => fixedSelectedDays.includes(d))
     );
     const updatedOpenHours = existingData.openHours.filter(
-      (schedule: any) => !fixedSelectedDays.some(day => schedule.selectedDays.includes(day))
+      (schedule: any) => !schedule.selectedDays.some((d: string) => fixedSelectedDays.includes(d))
     );
 
-    // 🔹 Add the new fixed slots
-    updatedFixedSlots.push({
-      selectedDays: fixedSelectedDays,
-      blockedSlots: fixedBlockedTimes,
+    fixedSelectedDays.forEach((day) => {
+      updatedFixedSlots.push({
+        selectedDays: [day],
+        blockedSlots: fixedBlockedTimes,
+      });
     });
 
-    // 🔹 Save to Firestore
-    await setDoc(docRef, { fixedSlots: updatedFixedSlots, openHours: updatedOpenHours }, { merge: true });
+    console.log("📋 New fixedSlots after update:", updatedFixedSlots);
+    console.log("🧹 New openHours after filtering:", updatedOpenHours);
 
+    await setDoc(docRef, {
+      fixedSlots: updatedFixedSlots,
+      openHours: updatedOpenHours, // ensure conflicting openHours are removed
+    }, { merge: true });
+
+    console.log("✅ Successfully saved fixedSlots.");
   } catch (error) {
-    console.error("Error saving fixed slots:", error);
+    console.error("❌ Error saving fixed slots:", error);
   }
 };
 
@@ -561,7 +703,11 @@ export const checkAndSaveOpenHours = async (
 
   try {
     const docSnap = await getDoc(docRef);
-    let existingData = docSnap.exists() ? docSnap.data() : { openHours: [], fixedSlots: [] };
+    let rawData = docSnap.exists() ? docSnap.data() : {};
+    let existingData = {
+      openHours: rawData.openHours ?? [],
+      fixedSlots: rawData.fixedSlots ?? [],
+    };
 
     // 🔹 Check if the selected days exist in either `openHours` or `fixedSlots`
     const existingOpenDays = existingData.openHours.filter((schedule: any) =>
@@ -611,7 +757,11 @@ export const checkAndSaveFixedSlots = async (
 
   try {
     const docSnap = await getDoc(docRef);
-    let existingData = docSnap.exists() ? docSnap.data() : { openHours: [], fixedSlots: [] };
+    let rawData = docSnap.exists() ? docSnap.data() : {};
+    let existingData = {
+      openHours: rawData.openHours ?? [],
+      fixedSlots: rawData.fixedSlots ?? [],
+    };
 
     // 🔹 Check if the selected days exist in either `openHours` or `fixedSlots`
     const existingFixedDays = existingData.fixedSlots.filter((slot: any) =>
