@@ -35,9 +35,7 @@ const DaySchedule = ({
     const minute = parseInt(minutePart, 10) || 0;
   
     return hour * 60 + minute;
-  }; 
-
-  console.log(bookings)
+  };
 
   const convert12HoursToMinutes = (time: string): number => {
     if (!time) return 0;
@@ -117,20 +115,27 @@ const DaySchedule = ({
     });
   });
   
-  // const allTimes = [...mergedOpenHours, ...mergedFixedSlots];
-  // const earliestStart = Math.min(...allTimes.map(({ start }) => convert12HoursToMinutes(start)), 8 * 60);
-  // const latestEnd = Math.max(...allTimes.map(({ end }) => convert12HoursToMinutes(end)), 18 * 60);
-  const earliestStart = Math.min(
-    ...mergedOpenHours.map(({ start }) => convert12HoursToMinutes(start)), 
-    ...mergedFixedSlots.map(({ start }) => convert24HoursToMinutes(start)), 
-    8 * 60
-  );
-  const latestEnd = Math.max(
-    ...mergedOpenHours.map(({ end }) => convert12HoursToMinutes(end)), 
-    ...mergedFixedSlots.map(({ end }) => convert24HoursToMinutes(end)), 
-    18 * 60
-  );
-  const interval = 30; // Render every 30 minutes
+  const openStartTimes = mergedOpenHours.map(({ start }) => convert12HoursToMinutes(start));
+  const fixedStartTimes = mergedFixedSlots.map(({ start }) => convert24HoursToMinutes(start));
+  const openEndTimes = mergedOpenHours.map(({ end }) => convert12HoursToMinutes(end));
+  const fixedEndTimes = mergedFixedSlots.map(({ end }) => convert24HoursToMinutes(end));
+
+  const hasTimeData = openStartTimes.length > 0 || fixedStartTimes.length > 0;
+
+  const defaultStart = 8 * 60; // 8:00 AM
+  const defaultEnd = 18 * 60; // 6:00 PM
+
+  const earliestStart = hasTimeData
+    ? Math.min(...openStartTimes, ...fixedStartTimes) - 60
+    : defaultStart;
+
+  const latestEnd = hasTimeData
+    ? Math.max(...openEndTimes, ...fixedEndTimes) + 60
+    : defaultEnd;
+
+  // Make sure it's not negative
+  const interval = 30;
+  const blockCount = Math.max(0, Math.ceil((latestEnd - earliestStart) / interval));
 
   return (
     <div className="w-full bg-white p-4 rounded-lg shadow text-custom-8">
@@ -139,7 +144,7 @@ const DaySchedule = ({
       </h2>
 
       <div className="flex flex-col relative">
-        {[...Array(Math.ceil((latestEnd - earliestStart) / interval))].map((_, i) => {
+        {[...Array(blockCount)].map((_, i) => {
           const minutes = earliestStart + i * interval;
           const formattedTime = formatTime(minutes);
 
@@ -186,20 +191,20 @@ const DaySchedule = ({
                 ) && <Separator className="flex-1 bg-gray-300" />}
               </div>
 
-              {openHour && !fixedSlot && convert12HoursToMinutes(openHour.start) === minutes && (
+              {openHour && !fixedSlot && convert12HoursToMinutes(openHour.start) >= minutes && convert12HoursToMinutes(openHour.start) < minutes + interval && (
                 <div
                   className="absolute left-[5rem] right-0 bg-green-200 opacity-40 p-3 text-sm text-black rounded-md"
                   style={{
-                    height: `${(convert12HoursToMinutes(openHour.end) - convert12HoursToMinutes(openHour.start)) / interval * 3.5}rem`,
+                    height: `${(convert12HoursToMinutes(openHour.end) - convert12HoursToMinutes(openHour.start)) / interval * 3.55}rem`,
                   }}
                 />
               )}
 
-              {fixedSlot && convert24HoursToMinutes(fixedSlot.start) === minutes && (
+              {fixedSlot && convert24HoursToMinutes(fixedSlot.start) >= minutes && convert24HoursToMinutes(fixedSlot.start) < minutes + interval && (
                 <div
                   className="absolute left-[5rem] right-0 bg-purple-200 opacity-40 p-3 text-sm text-black rounded-md"
                   style={{
-                    height: `${(convert24HoursToMinutes(fixedSlot.end) - convert24HoursToMinutes(fixedSlot.start)) / interval * 3.5}rem`,
+                    height: `${(convert24HoursToMinutes(fixedSlot.end) - convert24HoursToMinutes(fixedSlot.start)) / interval * 3.55}rem`,
                   }}
                 >
                   <div className="text-xs text-gray-700 font-semibold">{fixedSlot.allowedPackages.join(", ")}</div>

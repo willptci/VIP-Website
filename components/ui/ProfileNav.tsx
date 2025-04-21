@@ -41,7 +41,7 @@ const components: { title: string; href: string; description: string }[] = [
 
 const ProfileNav: React.FC = () => {
   return (
-    <div className="pl-5 pt-3 pb-3 bg-white space-x-8 font-syne text-2xl text-custom-8">
+    <div className="pl-5 pt-3 pb-3 bg-white space-x-20 font-syne text-2xl text-custom-8">
     <NavigationMenu>
       <NavigationMenuList>
         <NavigationMenuItem>
@@ -61,7 +61,7 @@ const ProfileNav: React.FC = () => {
         <NavigationMenuItem>
           <Link href="/businessCustomize" legacyBehavior passHref>
             <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-              Business
+              Edit Business
             </NavigationMenuLink>
           </Link>
         </NavigationMenuItem>

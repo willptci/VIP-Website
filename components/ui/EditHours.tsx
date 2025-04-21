@@ -218,6 +218,7 @@ const EditHours = ({ onScheduleUpdate }: { onScheduleUpdate: () => void }) => {
       setOverwriteType("fixed");
       setShowConfirmDialog(true);
     } else {
+      await saveFixedSlots(fixedSelectedDays, fixedBlockedTimes);
       onScheduleUpdate();
       toast("Fixed Slots Updated!", {
         description: `Days: ${fixedSelectedDays.join(", ")} | Time Slots: ${fixedBlockedTimes.map(slot => `${slot.start} - ${slot.end}`).join(", ")}`,

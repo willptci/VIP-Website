@@ -51,11 +51,35 @@ export function BookNowCard({
     const [children, setChildren] = useState(0);
     const [infants, setInfants] = useState(0);
 
+    const [validScheduleDates, setValidScheduleDates] = useState<Set<string>>(new Set());
+
+    useEffect(() => {
+        const loadSchedule = async () => {
+          const schedule = await fetchBusinessSchedule();
+      
+          const validDays = new Set<string>();
+      
+          const allEntries = [...(schedule.openHours ?? []), ...(schedule.fixedSlots ?? [])];
+          allEntries.forEach(entry => {
+            entry.selectedDays.forEach((day: string) => validDays.add(day.toLowerCase()));
+          });
+      
+          setValidScheduleDates(validDays);
+        };
+      
+        loadSchedule();
+      }, []);
+
     useEffect(() => {
         if (selectedDate) {
             fetchScheduleForDay(selectedDate);
         }
     }, [selectedDate, selectedPackage]);
+
+    const disableDays = (date: Date) => {
+        const dayName = date.toLocaleDateString("en-US", { weekday: "long" }).toLowerCase();
+        return !validScheduleDates.has(dayName); // disable days not in schedule
+    };
 
     const fetchScheduleForDay = async (date: Date) => {
         const schedule = await fetchBusinessSchedule();
@@ -208,6 +232,8 @@ export function BookNowCard({
                         mode="single"
                         selected={selectedDate}
                         onSelect={handleDateSelect}
+                        disabled={disableDays}
+                        
                     />
                 </PopoverContent>
                 </Popover>

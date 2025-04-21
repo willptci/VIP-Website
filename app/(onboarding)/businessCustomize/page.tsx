@@ -186,7 +186,7 @@ const BusinessOnboarding = () => {
 
           {showCompanyName && (
             <div className="flex gap-5 justify-center items-center">
-              {isEditing.companyName ? (
+              {isEditing.companyName || !businessData.companyName ? (
                 <Input
                   type="text"
                   value={businessData.companyName}
@@ -243,7 +243,7 @@ const BusinessOnboarding = () => {
                     </Button>
                   )}
                 </div>
-              {isEditing.companyDescription ? (
+              {isEditing.companyDescription || !businessData.companyDescription ? (
                 <Textarea
                 value={businessData.companyDescription}
                 onChange={(e) => handleUpdateField("companyDescription", e.target.value)}
@@ -296,7 +296,7 @@ const BusinessOnboarding = () => {
                         <p className="mt-2 text-center">{businessData.firstName + " " + businessData.lastName}</p>
                       )}
                     </div>
-                  {isEditing.ownerDescription ? (
+                  {isEditing.ownerDescription || !businessData.ownerDescription ? (
                     <Textarea
                       value={businessData.ownerDescription}
                       onChange={(e) => handleUpdateField("ownerDescription", e.target.value)}
