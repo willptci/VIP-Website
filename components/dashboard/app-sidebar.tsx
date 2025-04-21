@@ -17,10 +17,10 @@ import {
   SettingsIcon,
   UsersIcon,
 } from "lucide-react"
-import { NavDocuments } from "@/components/nav-documents"
-import { NavMain } from "@/components/nav-main"
-import { NavSecondary } from "@/components/nav-secondary"
-import { NavUser } from "@/components/nav-user"
+import { NavDocuments } from "@/components/dashboard/nav-documents"
+import { NavMain } from "@/components/dashboard/nav-main"
+import { NavSecondary } from "@/components/dashboard/nav-secondary"
+import { NavUser } from "@/components/dashboard/nav-user"
 import {
   Sidebar,
   SidebarContent,
@@ -30,12 +30,9 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
+import { fetchBusinessInsights } from "@/lib/actions/business.actions"
+
 const data = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
   navMain: [
     {
       title: "Dashboard",
@@ -146,7 +143,25 @@ const data = {
     },
   ],
 }
+
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const [businessName, setBusinessName] = React.useState("Loading...")
+  const [businessEmail, setBusinessEmail] = React.useState("")
+
+  React.useEffect(() => {
+    const loadBusiness = async () => {
+      try {
+        const data = await fetchBusinessInsights()
+        setBusinessName(data.companyName || "Your Business")
+        setBusinessEmail(data.businessEmail || "")
+      } catch (error) {
+        console.error("Failed to fetch business info", error)
+        setBusinessName("Unknown Business")
+      }
+    }
+    loadBusiness()
+  }, [])
+
   return (
     <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>
@@ -158,7 +173,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             >
               <a href="#">
                 <ArrowUpCircleIcon className="h-5 w-5" />
-                <span className="text-base font-semibold">Acme Inc.</span>
+                <span className="text-base font-semibold">{businessName}</span>
               </a>
             </SidebarMenuButton>
           </SidebarMenuItem>
@@ -170,7 +185,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser
+          user={{
+            name: businessName,
+            email: businessEmail,
+            avatar: "/avatars/shadcn.jpg",
+          }}
+        />
       </SidebarFooter>
     </Sidebar>
   )
