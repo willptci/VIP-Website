@@ -50,7 +50,6 @@ const AddPackage: React.FC<NewPackageProps>  = ({ addPackage }) => {
     const handleImageUpload = React.useCallback(async (file: File, index: number) => {
         try {
 
-        console.log(`Uploading file at index ${index}...`);
         // Upload file to Firebase Storage
         const downloadURL = await uploadPhotoForPackage(file);
 

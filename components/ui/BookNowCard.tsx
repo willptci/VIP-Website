@@ -233,7 +233,6 @@ export function BookNowCard({
                         selected={selectedDate}
                         onSelect={handleDateSelect}
                         disabled={disableDays}
-                        
                     />
                 </PopoverContent>
                 </Popover>

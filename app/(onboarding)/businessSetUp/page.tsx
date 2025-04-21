@@ -51,9 +51,6 @@ const BusinessSetUp = () => {
             };
         
             const docId = await addBusinessToFirestore(businessData);
-            console.log("Business created with ID:", docId);
-        
-            alert("Business successfully created!");
 
             router.push("/businessCustomize");
 

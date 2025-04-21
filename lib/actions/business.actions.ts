@@ -1,4 +1,4 @@
-import { doc, setDoc, updateDoc, getDoc, getDocs, query, where, collection, addDoc, arrayUnion, orderBy, limit } from "firebase/firestore";
+import { doc, setDoc, updateDoc, getDoc, getDocs, query, where, collection, addDoc, arrayUnion, orderBy, limit, deleteDoc, arrayRemove } from "firebase/firestore";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { auth, db } from "@/firebase/firebaseConfig";
 import { BusinessData, Package, SettingsData, ShowcasingBusinessData } from "@/types";
@@ -1041,5 +1041,24 @@ export const fetchTopReviews = async (businessId: string) => {
   } catch (error) {
     console.error("Error fetching reviews:", error);
     return [];
+  }
+};
+
+export const deleteBusinessPackage = async (packageId: string, businessId: string) => {
+  try {
+    // 1. Delete the package from the packages collection
+    const packageRef = doc(db, "packages", packageId);
+    await deleteDoc(packageRef);
+
+    // 2. Remove the packageId from the business's packages array
+    const businessRef = doc(db, "businesses", businessId);
+    await updateDoc(businessRef, {
+      packages: arrayRemove(packageId),
+    });
+
+    console.log(`Package ${packageId} deleted and removed from business ${businessId}`);
+  } catch (error) {
+    console.error("Error deleting package:", error);
+    throw error;
   }
 };

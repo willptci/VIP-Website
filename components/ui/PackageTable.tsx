@@ -88,7 +88,7 @@ export const columns: ColumnDef<Package>[] = [
   },
 ];
 
-export function DataTableDemo({ packages, onSelectPackage }: { packages: Package[], onSelectPackage: (pkg: Package | null) => void }) {
+export function DataTableDemo({ packages, onSelectPackage, allowDelete = false, onDelete}: { packages: Package[], onSelectPackage: (pkg: Package | null) => void, allowDelete?: boolean, onDelete?: (id: string) => void;}) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
@@ -174,7 +174,7 @@ export function DataTableDemo({ packages, onSelectPackage }: { packages: Package
                         className="bg-gray-50 p-4"
                       >
                         <div>
-                          <TableDropDown packageData={row.original} />
+                          <TableDropDown packageData={row.original} showDelete={allowDelete} onDelete={onDelete}/>
                         </div>
                       </TableCell>
                     </TableRow>

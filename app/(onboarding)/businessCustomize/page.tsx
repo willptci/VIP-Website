@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { fetchBusinessData, fetchBusinessPackages, saveSettings, updateBusinessField, uploadPhotoForBusiness } from '@/lib/actions/business.actions'
+import { deleteBusinessPackage, fetchBusinessData, fetchBusinessPackages, fetchShowcasingBusinessPackages, saveSettings, updateBusinessField, uploadPhotoForBusiness } from '@/lib/actions/business.actions'
 import CustomizeCard from "@/components/ui/CustomizeCard";
 import { DataTableDemo } from "@/components/ui/PackageTable";
 import { Button } from "@/components/ui/button";
@@ -38,8 +38,7 @@ const BusinessOnboarding = () => {
   }
   
   const [businessData, setBusinessData] = useState<BusinessData>({} as BusinessData);
-  
-  console.log(businessData)
+
   const [isEditing, setIsEditing] = useState({
     companyName: false,
     companyDescription: false,
@@ -50,6 +49,8 @@ const BusinessOnboarding = () => {
   const [authId, setAuthId] = useState<string | null>(null);
 
   const [tableData, setTableData] = useState<Package[]>([]);
+
+  console.log(tableData)
 
   useEffect(() => {
     const auth = getAuth();
@@ -63,8 +64,8 @@ const BusinessOnboarding = () => {
           const data = await fetchBusinessData(uid);
           setBusinessData(data);
 
-          //might not need
-          const packages = await fetchBusinessPackages();
+          //might need to optimize
+          const packages = await fetchShowcasingBusinessPackages(uid);
           setTableData(packages);
         } catch (error) {
           console.error("Error fetching business data:", error);
@@ -128,6 +129,22 @@ const BusinessOnboarding = () => {
     fileInput.click();
   };
 
+  const handleDelete = async (id: string) => {
+    try {
+      if (!authId) return;
+  
+      await deleteBusinessPackage(id, authId!);
+      setTableData((prev) => prev.filter((pkg) => pkg.id !== id));
+  
+      toast("Package Deleted", {
+        description: "The package was successfully removed.",
+      });
+    } catch (error) {
+      toast("Delete Failed", {
+        description: "An error occurred while deleting the package.",
+      });
+    }
+  };
 
   const navigateToHome = async () => {
     try {
@@ -419,7 +436,7 @@ const BusinessOnboarding = () => {
 
             <div>
               <div className="p-5">
-                <DataTableDemo packages={tableData} onSelectPackage={setSelectedPackage}/>
+                <DataTableDemo packages={tableData} onSelectPackage={setSelectedPackage} allowDelete={true} onDelete={handleDelete}/>
                 <div className="pt-4 rounded-t-lg">
                   <AddPackage 
                     addPackage={(newPackage: Package) =>
