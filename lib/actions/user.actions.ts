@@ -6,7 +6,7 @@ import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { SignInProps, SignUpParams, User } from "@/types";
 
 export const signIn = async ({ email, password }: SignInProps) => {
-
+  console.log("User trying to sign-in with ", email, " and ", password);
   if (typeof window === "undefined") {
     throw new Error("Firebase Auth can only be used client-side.");
   }
@@ -25,6 +25,8 @@ export const signIn = async ({ email, password }: SignInProps) => {
 
 export const signUp = async ({ email, password, firstName, lastName, role }: SignUpParams) => {
   try {
+    console.log("user try to sign-up with")
+    console.log(email, " ", password)
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
 
@@ -42,7 +44,7 @@ export const signUp = async ({ email, password, firstName, lastName, role }: Sig
 
     await setDoc(doc(db, 'users', user.uid), userData);
 
-    console.log("User signed up:", user);
+    console.log("User signed up:", user.uid);
     return user;
   } catch (error) {
     console.error("Error during sign-up:", error);

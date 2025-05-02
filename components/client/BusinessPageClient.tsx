@@ -74,7 +74,7 @@ export default function BusinessPageClient({
               {/* Second Image and Who You Are */}
               <div className="flex items-center justify-center gap-8 pt-8">
                 <div className="flex-1 flex items-center justify-center text-center max-w-2xl">
-                  <p className="text-2xl leading-relaxed">{businessData.companyDescription}</p>
+                  <p className="text-2xl leading-relaxed">{businessData.ownerDescription}</p>
                 </div>
 
                 {getImage(1, "/default-image.jpg") ? (
